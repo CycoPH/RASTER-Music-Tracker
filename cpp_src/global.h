@@ -130,7 +130,8 @@ extern BOOL is_editing_infos;		//0 no, 1 song name is edited
 
 extern int g_line_y;			//active line coordinate, used to reference g_cursoractview to the correct position
 
-extern int g_tracklinehighlight;	//line highlighted every x lines
+extern int g_trackLinePrimaryHighlight;	//primary line highlighted every x lines
+extern int g_trackLineSecondaryHighlight;	//secondary line highlighted every x lines
 extern BOOL g_tracklinealtnumbering; //alternative way of line numbering in tracks
 extern int g_linesafter;			//number of lines to scroll after inserting a note (initializes in CSong :: Clear)
 extern BOOL g_ntsc;				//NTSC (60Hz)
@@ -158,6 +159,7 @@ extern UINT g_mousebutt;			//mouse button
 extern int g_mouselastbutt;
 extern int g_mouse_px;
 extern int g_mouse_py;
+extern int g_lastKeyPressed;		//for debugging vk input
 
 extern CString g_prgpath;					//path to the directory from which the program was started (including a slash at the end)
 extern CString g_lastloadpath_songs;		//the path of the last song loaded
@@ -168,7 +170,7 @@ extern CString g_path_songs;		//default path for songs
 extern CString g_path_instruments;	//default path for instruments
 extern CString g_path_tracks;		//default path for tracks
 
-extern int g_keyboard_layout;			//1 yes, 0 no, not be useful anymore... should be deleted
+extern int g_keyboard_layout;			//Keyboard layout is used by RMT. eg: QWERTY, AZERTY, etc
 extern BOOL g_keyboard_swapenter;		//1 yes, 0 no, probably not needed anymore but will be kept for now
 extern BOOL g_keyboard_playautofollow;	//1 yes, 0 no
 extern BOOL g_keyboard_updowncontinue;	//1 yes, 0 no

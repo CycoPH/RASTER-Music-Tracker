@@ -256,8 +256,8 @@ CRmtView::CRmtView()
 
 CRmtView::~CRmtView()
 {
-	g_mem_dc->SelectObject(m_penorig);		//The return of the original Pen
-	delete m_pen1;							//unloaded m_pen1
+	if (g_mem_dc) g_mem_dc->SelectObject(m_penorig);		//The return of the original Pen
+	if (m_pen1) delete m_pen1;							//unloaded m_pen1
 }
 
 void CRmtView::OnDestroy() 
@@ -481,7 +481,7 @@ void CRmtView::ReadConfig()
 		//general
 		if (NAME("SCALEPERCENTAGE")) g_scaling_percentage = atoi(value);
 		else
-		if (NAME("TRACKLINEHIGHLIGHT")) g_tracklinehighlight = atoi(value);
+		if (NAME("TRACKLINEPRIMARYHIGHLIGHT")) g_trackLinePrimaryHighlight = atoi(value);
 		else
 		if (NAME("TRACKLINEALTNUMBERING")) g_tracklinealtnumbering = atoi(value);
 		else
@@ -498,10 +498,10 @@ void CRmtView::ReadConfig()
 		//keyboard
 		if (NAME("KEYBOARD_LAYOUT")) g_keyboard_layout = atoi(value);
 		else
-		if (NAME("KEYBOARD_PLAYAUTOFOLLOW")) g_keyboard_playautofollow = atoi(value);
-		else
-		if (NAME("KEYBOARD_SWAPENTER")) g_keyboard_swapenter = atoi(value);
-		else
+		//if (NAME("KEYBOARD_PLAYAUTOFOLLOW")) g_keyboard_playautofollow = atoi(value);
+		//else
+		//if (NAME("KEYBOARD_SWAPENTER")) g_keyboard_swapenter = atoi(value);
+		//else
 		if (NAME("KEYBOARD_UPDOWNCONTINUE")) g_keyboard_updowncontinue = atoi(value);
 		else
 		if (NAME("KEYBOARD_REMEMBEROCTAVESANDVOLUMES")) g_keyboard_RememberOctavesAndVolumes = atoi(value);
@@ -597,7 +597,7 @@ void CRmtView::WriteConfig()
 
 	//general
 	ou << "SCALEPERCENTAGE=" << g_scaling_percentage << endl;
-	ou << "TRACKLINEHIGHLIGHT=" << g_tracklinehighlight << endl;
+	ou << "TRACKLINEPRIMARYHIGHLIGHT=" << g_trackLinePrimaryHighlight << endl;
 	ou << "TRACKLINEALTNUMBERING=" << g_tracklinealtnumbering << endl;
 	ou << "DISPLAYFLATNOTES=" << g_displayflatnotes << endl;
 	ou << "USEGERMANNOTATION=" << g_usegermannotation << endl;
@@ -606,8 +606,8 @@ void CRmtView::WriteConfig()
 	ou << "NOHWSOUNDBUFFER=" << g_nohwsoundbuffer << endl;
 	//keyboard
 	ou << "KEYBOARD_LAYOUT=" << g_keyboard_layout << endl;
-	ou << "KEYBOARD_PLAYAUTOFOLLOW=" << g_keyboard_playautofollow << endl;
-	ou << "KEYBOARD_SWAPENTER=" << g_keyboard_swapenter << endl;
+	//ou << "KEYBOARD_PLAYAUTOFOLLOW=" << g_keyboard_playautofollow << endl;
+	//ou << "KEYBOARD_SWAPENTER=" << g_keyboard_swapenter << endl;
 	ou << "KEYBOARD_UPDOWNCONTINUE=" << g_keyboard_updowncontinue << endl;
 	ou << "KEYBOARD_REMEMBEROCTAVESANDVOLUMES=" << g_keyboard_RememberOctavesAndVolumes << endl;
 	ou << "KEYBOARD_ESCRESETATARISOUND=" << g_keyboard_escresetatarisound << endl;
@@ -655,8 +655,8 @@ void CRmtView::OnViewConfiguration()
 	CConfigDlg dlg;
 	//general
 	dlg.m_scaling_percentage = g_scaling_percentage;
-	dlg.m_tuning = g_basetuning;
-	dlg.m_tracklinehighlight = g_tracklinehighlight;
+	//dlg.m_tuning = g_basetuning;
+	dlg.m_tracklinehighlight = g_trackLinePrimaryHighlight;
 	dlg.m_tracklinealtnumbering = g_tracklinealtnumbering;
 	dlg.m_displayflatnotes = g_displayflatnotes;
 	dlg.m_usegermannotation = g_usegermannotation;
@@ -667,8 +667,8 @@ void CRmtView::OnViewConfiguration()
 	//keyboard
 	dlg.m_keyboard_layout = g_keyboard_layout;
 	dlg.m_keyboard_escresetatarisound = g_keyboard_escresetatarisound;
-	dlg.m_keyboard_playautofollow = g_keyboard_playautofollow;
-	dlg.m_keyboard_swapenter = g_keyboard_swapenter;
+	//dlg.m_keyboard_playautofollow = g_keyboard_playautofollow;
+	//dlg.m_keyboard_swapenter = g_keyboard_swapenter;
 	dlg.m_keyboard_updowncontinue = g_keyboard_updowncontinue;
 	dlg.m_keyboard_rememberoctavesandvolumes = g_keyboard_RememberOctavesAndVolumes;
 	dlg.m_keyboard_askwhencontrol_s = g_keyboard_askwhencontrol_s;
@@ -713,7 +713,7 @@ void CRmtView::OnViewConfiguration()
 		g_ntsc = dlg.m_ntsc;
 		g_viewDoSmoothScrolling = dlg.m_doSmoothScrolling;
 
-		g_tracklinehighlight = dlg.m_tracklinehighlight;
+		g_trackLinePrimaryHighlight = dlg.m_tracklinehighlight;
 		g_tracklinealtnumbering = dlg.m_tracklinealtnumbering;
 		g_displayflatnotes = dlg.m_displayflatnotes;
 		g_usegermannotation = dlg.m_usegermannotation;
@@ -721,8 +721,8 @@ void CRmtView::OnViewConfiguration()
 		//keyboard
 		g_keyboard_layout = dlg.m_keyboard_layout;
 		g_keyboard_escresetatarisound = dlg.m_keyboard_escresetatarisound;
-		g_keyboard_playautofollow = dlg.m_keyboard_playautofollow;
-		g_keyboard_swapenter = dlg.m_keyboard_swapenter;
+		//g_keyboard_playautofollow = dlg.m_keyboard_playautofollow;
+		//g_keyboard_swapenter = dlg.m_keyboard_swapenter;
 		g_keyboard_updowncontinue=dlg.m_keyboard_updowncontinue;
 		g_keyboard_RememberOctavesAndVolumes = dlg.m_keyboard_rememberoctavesandvolumes;
 		g_keyboard_askwhencontrol_s = dlg.m_keyboard_askwhencontrol_s;
@@ -881,7 +881,7 @@ void CRmtView::OnInitialUpdate()
 
 	//command line
 	CString cmdl = GetCommandLine();
-	CString commandlinefilename="";
+	CString commandLineFilename = "";
 	g_prgpath = "";
 	g_lastloadpath_songs = g_lastloadpath_instruments = g_lastloadpath_tracks = "";
 	if (cmdl!="")
@@ -902,7 +902,7 @@ void CRmtView::OnInitialUpdate()
 		GetCommandLineItem(cmdl,i1,i2);	//parameter
 		if (i1!=i2)
 		{
-			commandlinefilename=cmdl.Mid(i1,i2-i1);
+			commandLineFilename = cmdl.Mid(i1, i2 - i1);
 		}
 	}
 	CDC *dc=GetDC();
@@ -990,12 +990,12 @@ void CRmtView::OnInitialUpdate()
 	g_Song.ChangeTimer((g_ntsc)? 17 : 20);
 
 	//If the tracker was started with an argument, it attempts to load the file, and will return an error if the extention isn't .rmt. 
-	//When not argument is passed, the initialisation continues like normal.
-	if (commandlinefilename != "")
+	//When no argument is passed, the initialisation continues like normal.
+	if (commandLineFilename != "")
 	{
-		if (commandlinefilename.Right(4) == ".rmt")
+		if (commandLineFilename.Right(4) == ".rmt")
 		{
-			g_Song.FileOpen((LPCTSTR)commandlinefilename);
+			g_Song.FileOpen((LPCTSTR)commandLineFilename, FALSE);
 		}
 		else
 		{
@@ -1145,28 +1145,46 @@ int CRmtView::MouseAction(CPoint point,UINT mousebutt,short wheelzDelta=0)
 		return 6;
 	}
 
-	rec.SetRect(432, 16, 432 + 8 * 2, 16 + 16);
+	rec.SetRect(432, 16, 432 + 8 * 5, 16 + 16);
 	if (rec.PtInRect(point))
 	{
-		//Songline highlight
+		//track line highlights
+		BOOL r = 0;
+		int ma = (g_Tracks.m_maxTrackLength) / 2;
+		int px = (point.x - 432 - 4) / 8;
 		SetCursor(m_cursorGoto);
 		if (mousebutt & MK_LBUTTON)
 		{
-			//TODO
+			r = g_Song.InfoCursorGotoHighlight(point.x - 432);
+			if (r) SCREENUPDATE;
 		}
 		if (wheelzDelta != 0)
 		{
-			BOOL r = 0;
-			int ma = (g_Tracks.m_maxtracklen) / 2;
-			if (wheelzDelta < 0)
+			if (px < 2)	//primary line highlight
 			{
-				r = g_tracklinehighlight++;
-				if (g_tracklinehighlight > ma) g_tracklinehighlight = ma;
+				if (wheelzDelta < 0)
+				{
+					r = g_trackLinePrimaryHighlight++;
+					if (g_trackLinePrimaryHighlight > ma) g_trackLinePrimaryHighlight = ma;
+				}
+				else if (wheelzDelta > 0)
+				{
+					r = g_trackLinePrimaryHighlight--;
+					if (g_trackLinePrimaryHighlight < 1) g_trackLinePrimaryHighlight = 1;
+				}
 			}
-			else if (wheelzDelta > 0)
+			else //secondary line highlight 
 			{
-				r = g_tracklinehighlight--;
-				if (g_tracklinehighlight < 1) g_tracklinehighlight = 1;
+				if (wheelzDelta < 0)
+				{
+					r = g_trackLineSecondaryHighlight++;
+					if (g_trackLineSecondaryHighlight > ma) g_trackLineSecondaryHighlight = ma;
+				}
+				else if (wheelzDelta > 0)
+				{
+					r = g_trackLineSecondaryHighlight--;
+					if (g_trackLineSecondaryHighlight < 1) g_trackLineSecondaryHighlight = 1;
+				}
 			}
 			if (r) SCREENUPDATE;
 		}
@@ -1540,6 +1558,8 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			vk=FlaToCha[nfb-71];
 		}
 	}
+
+	g_lastKeyPressed = vk;	//debug key reading for setting up keyboard layouts withought having to guess which key is where
 
 	switch(vk)
 	{
@@ -2920,7 +2940,7 @@ void CRmtView::OnSongSongchangemaximallengthoftracks()
 	int ma=g_Song.GetEffectiveMaxtracklen();
 
 	CChangeMaxtracklenDlg dlg;
-	dlg.m_info.Format("Current value: %i\nComputed effective value for current song: %i",g_Tracks.m_maxtracklen,ma);
+	dlg.m_info.Format("Current value: %i\nComputed effective value for current song: %i",g_Tracks.m_maxTrackLength,ma);
 	dlg.m_maxtracklen=ma;
 	if (dlg.DoModal()==IDOK)
 	{
@@ -2987,7 +3007,7 @@ void CRmtView::OnSongSizeoptimization()
 	int tracksmodified=0,loopsexpanded=0;
 	g_Song.TracksAllExpandLoops(tracksmodified,loopsexpanded);
 	//find the effective length of maxtracklen and shorten it if necessary
-	int maxtracklen = g_Tracks.m_maxtracklen;
+	int maxtracklen = g_Tracks.m_maxTrackLength;
 	int effemaxtracklen = g_Song.GetEffectiveMaxtracklen();
 	if (effemaxtracklen<maxtracklen)
 	{

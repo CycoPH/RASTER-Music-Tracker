@@ -51,6 +51,10 @@
 #define PROVE_POKEY_EXPLORER_MODE	4		// Ctrl + Shift + F5
 #define PROVE_MODE_MAX				4		// <-- Adjust as you add/remove modes
 
+// ----------------------------------------------------------------------------
+// Keyboard layouts that may be used with RMT for Notes input
+#define KEYBOARD_QWERTY	0
+#define KEYBOARD_AZERTY	1
 
 // ----------------------------------------------------------------------------
 // TODO: add more keys definition to simplify things
@@ -83,10 +87,12 @@
 #define INFO_Y_LINE_6	INFO_Y+5*16
 
 // Which part of the info area is active for editing (drawn in red)
-#define INFO_ACTIVE_NAME		0			// song name can be edited
-#define INFO_ACTIVE_SPEED		1			// song speed can be changed
-#define INFO_ACTIVE_MAIN_SPEED	2			// over all song speed
-#define INFO_ACTIVE_INSTR_SPEED	3			// How many times per frame is the instrument code called (1-8)
+#define INFO_ACTIVE_NAME			0			// song name can be edited
+#define INFO_ACTIVE_SPEED			1			// song speed can be changed
+#define INFO_ACTIVE_MAIN_SPEED		2			// over all song speed
+#define INFO_ACTIVE_INSTR_SPEED		3			// How many times per frame is the instrument code called (1-8)
+#define INFO_ACTIVE_1ST_HIGHLIGHT	4			// Primary line highlight can be edited
+#define INFO_ACTIVE_2ND_HIGHLIGHT	5			// Secondary line highlight can be edited
 
 // Which part of the data is currently active/visible/primary
 #define PART_INFO			0
@@ -104,7 +110,7 @@
 // ----------------------------------------------------------------------------
 // RMT file format
 //
-#define RMTFORMATVERSION	1	//the version number that is saved into modules, highest means more recent
+#define RMTFORMATVERSION	2	//the version number that is saved into modules, highest means more recent
 #define TRACKLEN	256			//drive 128
 #define TRACKSNUM	254			//0-253
 #define SONGLEN		256
@@ -113,9 +119,9 @@
 #define NOTESNUM	61			//notes 0-60 inclusive
 #define MAXVOLUME	15			//maximum volume
 #define PARCOUNT	24			//24 instrument parameters
-#define ENVCOLS		48			//48 columns in envelope (drive 32) (48 from version 1.25)
+#define ENVELOPE_MAX_COLUMNS	48			// 48 columns in envelope (drive 32) (48 from version 1.25)
 #define ENVROWS		8			//8 line (parameter) in the envelope
-#define TABLEN		32			//maximum 32 steps in the table
+#define NOTE_TABLE_MAX_LEN		32		// maximum 32 steps in the note table
 
 #define INSTRUMENT_NAME_MAX_LEN	32		// maximum length of instrument name
 #define SONG_NAME_MAX_LEN		64		// maximum length of song name
