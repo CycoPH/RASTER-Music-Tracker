@@ -14,11 +14,10 @@
 #define TEXT_COLOR_RED 6
 #define TEXT_COLOR_INVERSE_RED 9
 #define TEXT_COLOR_EXTRA 10
-#define TEXT_COLOR_PURPLE 11
-#define TEXT_COLOR_TURQUOISE 12
+#define TEXT_COLOR_GREEN 11
+#define TEXT_COLOR_DARK_GRAY 12
 #define TEXT_COLOR_BLUE 13
-#define TEXT_COLOR_LIGHT_GRAY 14
-
+#define TEXT_COLOR_TURQUOISE 14
 
 #define COLOR_SELECTED			TEXT_COLOR_INVERSE_RED	//highlight colour
 #define COLOR_SELECTED_PROVE	TEXT_COLOR_INVERSE_BLUE	//highlight colour in PROVE mode
@@ -110,7 +109,7 @@
 // ----------------------------------------------------------------------------
 // RMT file format
 //
-#define RMTFORMATVERSION	2	//the version number that is saved into modules, highest means more recent
+#define RMTFORMATVERSION	1	//the version number that is saved into modules, highest means more recent
 #define TRACKLEN	256			//drive 128
 #define TRACKSNUM	254			//0-253
 #define SONGLEN		256
