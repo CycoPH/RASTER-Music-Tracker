@@ -379,7 +379,7 @@ void CRmtView::DrawAnalyzer()
 	CDC* pDC = GetDC();
 	if (pDC)
 	{
-		// g_Song.DrawAnalyzer(pDC);
+		g_Song.DrawAnalyzer(pDC);
 		ReleaseDC(pDC);
 	}
 }
@@ -389,7 +389,7 @@ void CRmtView::DrawPlaytimecounter()
 	CDC* pDC = GetDC();
 	if (pDC)
 	{
-		// g_Song.DrawPlaytimecounter(pDC);
+		g_Song.DrawPlayTimeCounter(pDC);
 		ReleaseDC(pDC);
 	}
 }
@@ -819,7 +819,8 @@ void CRmtView::OnViewTuning()
 		g_basenote = dlg.m_basenote;
 		g_temperament = dlg.m_temperament;
 		WriteConfig();
-		Atari_InitRMTRoutine(); //reset RMT routines
+		//Atari_InitRMTRoutine(); //reset RMT routines
+		g_Tuning.init_tuning();
 		g_screenupdate = 1;
 	}
 }

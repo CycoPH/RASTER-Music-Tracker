@@ -31,6 +31,8 @@ int g_scaling_percentage = 100;
 //best known compromise for both regions, they produce identical tables
 double g_basetuning = (g_ntsc) ? 444.895778867913 : 440.83751645933;
 int g_basenote = 3;	//3 = A-
+int g_temperament = 0;	//each preset is assigned to a number. 0 means no Temperament, any value that is not assigned defaults to custom
+int g_notesperoctave = 12;	//by default there are 12 notes per octave
 
 //ratio used for each note => NOTE_L / NOTE_R, must be treated as doubles!!!
 double g_UNISON = 1;
@@ -77,11 +79,6 @@ int g_MIN_7TH_R = 17;
 int g_MAJ_7TH_R = 8;
 int g_OCTAVE_R = 1;
 
-//each preset is assigned to a number. 0 means no Temperament, any value that is not assigned defaults to custom
-int g_temperament = 0;
-
-
-
 
 HWND g_hwnd = NULL;
 HWND g_viewhwnd = NULL;
@@ -116,7 +113,17 @@ BOOL g_rmtstripped_gvf;			//gvs GlobalVolumeFade for feat
 BOOL g_rmtstripped_nos;			//nos NoStartingSongline for feat
 
 CString g_rmtmsxtext;
-CString g_expasmlabelprefix;	//label prefix for export ASM simple notation
+CString g_PrefixForAllAsmLabels;	//label prefix for export ASM simple notation
+
+CString g_AsmLabelForStartOfSong;	// Label for relocatable ASM for RMTPlayer.asm
+BOOL g_AsmWantRelocatableInstruments = 0;
+BOOL g_AsmWantRelocatableTracks = 0;
+BOOL g_AsmWantRelocatableSongLines = 0;
+CString g_AsmInstrumentsLabel;
+CString g_AsmTracksLabel;
+CString g_AsmSongLinesLabel;
+int g_AsmFormat = ASSEMBLER_FORMAT_XASM;
+
 
 int last_active_ti;			//if equal to g_active_ti, no screen clear necessary
 int last_activepart;		//if equal to g_activepart, no block clear necessary
@@ -192,6 +199,7 @@ CXPokey			g_Pokey;			// The simulated Pokey chip
 CInstruments	g_Instruments;
 CTracks			g_Tracks;
 CTrackClipboard g_TrackClipboard;
+CTuning			g_Tuning;			// Tuning calculations and POKEY tuning lookup tables generation
 
 /*
 void UpdateShiftControlKeys()

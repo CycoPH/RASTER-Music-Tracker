@@ -4,6 +4,8 @@ using namespace std;
 
 #include "GuiHelpers.h"
 
+#include "Song.h"
+
 // MFC interface code
 #include "FileNewDlg.h"
 #include "ExportDlgs.h"
@@ -17,7 +19,6 @@ using namespace std;
 #include "IOHelpers.h"
 
 #include "Instruments.h"
-#include "Song.h"
 #include "Clipboard.h"
 
 
@@ -112,7 +113,7 @@ void CSong::ClearSong(int numOfTracks)
 	g_rmtstripped_sfx = 0;		//is not a standard sfx variety stripped RMT
 	g_rmtstripped_gvf = 0;		//default does not use Feat GlobalVolumeFade
 	g_rmtmsxtext = "";			//clear the text for MSX export
-	g_expasmlabelprefix = "MUSIC";	//default label prefix for exporting simple ASM notation
+	g_PrefixForAllAsmLabels = "MUSIC";	//default label prefix for exporting simple ASM notation
 
 	PlayPressedTonesInit();
 
@@ -143,7 +144,7 @@ void CSong::ClearSong(int numOfTracks)
 
 	m_filename = "";
 	m_filetype = 0;	//none
-	m_exporttype = 0; //none
+	m_lastExportType = IOTYPE_NONE;
 
 	m_TracksOrderChange_songlinefrom = 0x00;
 	m_TracksOrderChange_songlineto = SONGLEN - 1;
@@ -251,7 +252,7 @@ int CSong::GetSubsongParts(CString& resultstr)
 }
 
 /// <summary>
-/// Mark all tracks that are referenced in song as USED
+/// Mark all tracks that are referenced in the song as USED
 /// </summary>
 /// <param name="arrayTRACKSNUM">Array where each used track if marked off</param>
 void CSong::MarkTF_USED(BYTE* arrayTRACKSNUM)
@@ -427,7 +428,7 @@ int CSong::MakeModule(unsigned char* mem, int addr, int iotype, BYTE* instrument
 {
 	int i, j;
 
-	//returns maxadr (points to the first free address after the module) and sets the instrsaved and tracksaved fields
+	// Returns maxadr (points to the first free address after the module) and sets the instrsaved and tracksaved fields
 	if (iotype == IOTYPE_RMF) return MakeRMFModule(mem, addr, instrumentSavedFlags, trackSavedFlags);
 
 	// Clear the instrument and tracks used flags
@@ -3242,7 +3243,7 @@ void CSong::TimerRoutine()
 	if (m_play) g_playtime++;					//if the song is currently playing, increment the timer
 
 	//--- NTSC timing hack during playback ---//
-	if (!SAPRDUMP && m_play && g_ntsc)
+	if (!SAPRDUMP && g_ntsc)
 	{
 		//the NTSC timing cannot be divided to an integer
 		//the optimal timing would be 16.666666667ms, which is typically rounded to 17
@@ -3250,8 +3251,11 @@ void CSong::TimerRoutine()
 		//a good enough compromise for now is to make use of a '17-17-16' miliseconds "groove"
 		//this isn't proper, but at least, this makes the timing much closer to the actual thing
 		//the only issue with this is that the sound will have very slight jitters during playback 
-		if (g_playtime % 3 == 0) ChangeTimer(17);
-		else if (g_playtime % 3 == 2) ChangeTimer(16);
+		
+		//if (g_playtime % 3 == 0) ChangeTimer(17);
+		//else if (g_playtime % 3 == 2) ChangeTimer(16);
+		if (g_playtime % 2 == 0) ChangeTimer(17);
+		else ChangeTimer(16);
 	}
 
 	//--- PICTURE DRAWING ---//

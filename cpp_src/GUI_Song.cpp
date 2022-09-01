@@ -5,6 +5,8 @@ using namespace std;
 #include "GuiHelpers.h"
 
 // MFC interface code
+#include "Song.h"
+
 #include "FileNewDlg.h"
 #include "ExportDlgs.h"
 #include "importdlgs.h"
@@ -426,7 +428,7 @@ void CSong::DrawAnalyzer(CDC* pDC)
 			else coarse_divisor = (CLOCK_15) ? 114 : 28;
 
 			int i_audf = (JOIN_16BIT || JOIN_64KHZ || JOIN_15KHZ) ? audf16 : audf;
-			PITCH = generate_freq(audc, i_audf, audctl, i);
+			PITCH = g_Tuning.generate_freq(audc, i_audf, audctl, i);
 			snprintf(p, 10, "%9.2f", PITCH);
 
 			if (g_viewPokeyRegisters)
@@ -593,7 +595,7 @@ void CSong::DrawAnalyzer(CDC* pDC)
 							break;
 					}
 
-					e_pitch = get_pitch(i_audf, e_coarse_divisor, e_divisor, e_modoffset);
+					e_pitch = g_Tuning.get_pitch(i_audf, e_coarse_divisor, e_divisor, e_modoffset);
 					snprintf(p, 10, "%9.2f", e_pitch);
 					TextMiniXY(p, ANALYZER3_X, ANALYZER3_Y + 8 * 15, 2);
 
@@ -637,7 +639,9 @@ void CSong::DrawAnalyzer(CDC* pDC)
 						double centnum = 1200 * log2(PITCH / tuning);
 						int notenum = (int)round(centnum * 0.01) + 60;
 						int note = ((notenum + 96) - basenote) % 12;
-						int octave = (notenum - basenote) / 12;
+
+						int octave = (((notenum + 96) - basenote) / 12) - 8;
+						
 						int cents = (int)round(centnum - (notenum - 60) * 100);
 
 						snprintf(szBuffer, 4, "%03d", cents);
@@ -647,6 +651,9 @@ void CSong::DrawAnalyzer(CDC* pDC)
 							TextMiniXY("+", ANALYZER3_X + 8 * 49, ANALYZER3_Y + a, TEXT_MINI_COLOR_GRAY);
 						else
 							TextMiniXY("-", ANALYZER3_X + 8 * 49, ANALYZER3_Y + a, TEXT_MINI_COLOR_GRAY);
+
+						if (note < 0)
+							note *= -1;	//invert the negative to prevent going out of bounds
 
 						n[0] = notes[note][0];
 						n[1] = notes[note][1];
@@ -850,23 +857,22 @@ void CSong::DrawSong()
 	}
 }
 
-int last_active_trackline;
-int last_play_line;
-int last_activecol;
-int last_activecur;
-int last_speed;
-int last_x;
-int last_y;
-int last_linesnum;
-
 void CSong::DrawTracks()
 {
 	static char* tnames = "L1L2L3L4R1R2R3R4";
 	char s[16], stmp[16];
 	int i, x, y, tr, line, color;
 	int t;
+	int last_y;
 
-	BOOL smooth_scroll = g_viewDoSmoothScrolling;
+	//caching certain global variables makes sure they remain the same until the function finishes drawing the tracks
+	//this appears to be related to routine timing, and might actually explain why certain bugs seem to happen randomly
+	int trackactiveline = m_trackactiveline;
+	int trackplayline = m_trackplayline;
+	int songactiveline = m_songactiveline;
+	int songplayline = m_songplayline;
+	int speed = m_speed;
+	int speeda = m_speeda;
 
 	//coordinates for only the TRACKS width block rendering
 	int mask_x = (g_tracks4_8 == 4) ? TRACKS_X + (93 - 4 * 11) * 11 - 4 : TRACKS_X + (93 + 3) * 11 - 8;
@@ -883,19 +889,10 @@ void CSong::DrawTracks()
 	}
 
 	//the cursor position is alway centered regardless of the window size with this simple formula
-	g_cursoractview = ((m_trackactiveline + 8) - (g_tracklines / 2));
+	g_cursoractview = trackactiveline + 8 - g_line_y;
 
-	//attempts to stabilise the line position by forcing the last known valid parameters
-	y = TRACKS_Y + 3 * 16 - 2 + (m_trackactiveline - g_cursoractview + 8) * 16;
-	if (y != last_y && g_tracklines == last_linesnum && m_play && m_followplay) 
-	{
-		m_trackactiveline = last_active_trackline;
-		//m_trackplayline = last_play_line;	//must not edit manually! This will cause the player to actually "try" to play the line again!
-		g_cursoractview = last_activecur;
-	}
-
-	BOOL active_smooth = (smooth_scroll && m_play && m_followplay) ? 1 : 0;	//could also be used as an offset
-	int smooth_y = (active_smooth) ? ((m_speeda * 16) / m_speed) - 8 : 0;
+	BOOL active_smooth = (g_viewDoSmoothScrolling && m_play && m_followplay && speed > 1) ? 1 : 0;	//could also be used as an offset
+	int smooth_y = (active_smooth) ? ((speeda * 16) / speed) - 8 : 0;
 	if (smooth_y > 8 || smooth_y < -8) active_smooth = smooth_y = 0;	//prevents going out of bounds
 	y = (TRACKS_Y + (3 - active_smooth) * 16) + smooth_y;
 	x = TRACKS_X + 5 * 8;
@@ -909,16 +906,14 @@ void CSong::DrawTracks()
 		line = g_cursoractview + i - 8 - active_smooth;		//8 lines from above
 		int oob = 0;
 
-		int sl = m_songactiveline;	//offset by the oob songline counter when needed
+		int sl = songactiveline;	//offset by the oob songline counter when needed
 		int ln = GetSmallestMaxtracklen(sl);
-
-		//int ln = GetEffectiveMaxtracklen();	//not fully working, neither does GetSmallestMaxtracklen() but it looks a bit nicer :D	
 
 		if (line < 0)
 		{
 		minusline:
 			oob--;
-			sl = m_songactiveline + oob;
+			sl = songactiveline + oob;
 			if (sl < 0 || sl > 255) { sl += 256; sl %= 256; }
 			ln = GetSmallestMaxtracklen(sl);
 
@@ -930,7 +925,7 @@ void CSong::DrawTracks()
 		plusline:
 			oob++;
 			line -= ln;
-			sl = m_songactiveline + oob;
+			sl = songactiveline + oob;
 			if (sl < 0 || sl > 255) { sl += 256; sl %= 256; }
 			ln = GetSmallestMaxtracklen(sl);
 
@@ -961,7 +956,7 @@ void CSong::DrawTracks()
 			g_mem_dc->FillSolidRect(SCALE(TRACKS_X), SCALE(y), SCALE(mask_x), SCALE(16), RGB_BACKGROUND);
 			
 			//get the songline that has the goto set
-			sl = m_songactiveline + oob;
+			sl = songactiveline + oob;
 			if (sl < 0 || sl > 255) { sl += 256; sl %= 256; }
 
 			//if the line is 2 patterns or more away, it must also be gray
@@ -971,8 +966,8 @@ void CSong::DrawTracks()
 			break;
 		}
 
-		if (line == m_trackactiveline) color = (g_prove) ? TEXT_COLOR_BLUE : TEXT_COLOR_RED;	//red or blue
-		else if (line == m_trackplayline) color = TEXT_COLOR_YELLOW;	//yellow
+		if (line == trackactiveline) color = (g_prove) ? TEXT_COLOR_BLUE : TEXT_COLOR_RED;	//red or blue
+		else if (line == trackplayline) color = TEXT_COLOR_YELLOW;	//yellow
 		else if ((line % g_trackLinePrimaryHighlight) == 0 || (line % g_trackLineSecondaryHighlight) == 0) 
 			color = ((line % g_trackLinePrimaryHighlight) == 0) ? TEXT_COLOR_CYAN : TEXT_COLOR_GREEN;	//cyan or green
 		else color = TEXT_COLOR_WHITE;	//white
@@ -982,14 +977,14 @@ void CSong::DrawTracks()
 		for (int j = 0; j < g_tracks4_8; j++, x += 16 * 8)
 		{
 			//track in the current line of the song
-			sl = m_songactiveline + oob;
+			sl = songactiveline + oob;
 			if (sl < 0 || sl > 255) { sl += 256; sl %= 256; }
 			
 			tr = m_song[sl][j];
 
 			//is it playing?
-			if (m_songplayline == m_songactiveline) t = m_trackplayline; else t = -1;
-			g_Tracks.DrawTrackLine(j, x, y, tr, line, m_trackactiveline, g_cursoractview, t, (m_trackactivecol == j), m_trackactivecur, oob);
+			if (songplayline == songactiveline) t = trackplayline; else t = -1;
+			g_Tracks.DrawTrackLine(j, x, y, tr, line, trackactiveline, g_cursoractview, t, (m_trackactivecol == j), m_trackactivecur, oob);
 		}
 		x = TRACKS_X + 5 * 8;
 	}
@@ -1012,15 +1007,13 @@ void CSong::DrawTracks()
 		TextXY(s, x + 12, TRACKS_Y, color);
 
 		//track in the current line of the song
-		tr = m_song[m_songactiveline][i];
+		tr = m_song[songactiveline][i];
 
-		//is it playing?
-		//if (m_songplayline == m_songactiveline) t = m_trackplayline; else t = -1;
-		g_Tracks.DrawTrackHeader(i, x, y, tr);	//, g_tracklines + active_smooth * 2, m_trackactiveline, g_cursoractview, t, (m_trackactivecol == i), m_trackactivecur);
+		g_Tracks.DrawTrackHeader(i, x, y, tr); 
 	}
 
 	//lines delimiting the current line
-	x = (g_tracks4_8 == 4) ? TRACKS_X + (93 - 4 * 11) * 11 - 4 : TRACKS_X + (93 + 3) * 11 - 8;
+	x = mask_x;
 	y = TRACKS_Y + 3 * 16 - 2 + g_line_y * 16;
 	last_y = y;
 
@@ -1037,7 +1030,7 @@ void CSong::DrawTracks()
 
 		if (is_goto)
 		{
-			line_end = y + (8 - g_cursoractview + GetSmallestMaxtracklen(m_songactiveline)) * 16 + smooth_y;
+			line_end = y + (8 - g_cursoractview + GetSmallestMaxtracklen(songactiveline)) * 16 + smooth_y;
 		}
 
 		g_mem_dc->MoveTo(SCALE(TRACKS_X + 50 * 11 - 3), SCALE(y));
@@ -1106,13 +1099,6 @@ void CSong::DrawTracks()
 		TextXY(tx, x, TRACKS_Y + (4 + g_tracklines) * 16, TEXT_COLOR_RED);
 	}
 
-	last_active_trackline = m_trackactiveline;
-	last_play_line = m_trackplayline;
-	last_activecol = m_trackactivecol;
-	last_activecur = m_trackactivecur;
-	last_speed = m_speed;
-	last_linesnum = g_tracklines;
-
 	//debugging the "jumpy line" 
 	sprintf(s, "Y = %02d", last_y);
 	TextXY(s, TRACKS_X, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
@@ -1126,7 +1112,7 @@ void CSong::DrawTracks()
 	TextXY(s, TRACKS_X + 48 * 8, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
 	sprintf(s, "CA = %02d", g_cursoractview);
 	TextXY(s, TRACKS_X + 64 * 8, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
-	sprintf(s, "TA = %02d", m_trackactiveline);
+	sprintf(s, "TA = %02d", trackactiveline);
 	TextXY(s, TRACKS_X + 80 * 8, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
 	sprintf(s, "DY = %02d", g_mouse_py / 16);
 	TextXY(s, TRACKS_X + 96 * 8, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
@@ -1138,6 +1124,7 @@ void CSong::DrawTracks()
 	//debugging the way vk is processed for keyboard layout configuration
 	sprintf(s, "VK = %02X", g_lastKeyPressed);
 	TextXY(s, TRACKS_X + 144 * 8, TRACKS_Y + (5 + g_tracklines) * 16 - 2, TEXT_COLOR_TURQUOISE);
+
 }
 
 void CSong::DrawInstrument()
@@ -1318,6 +1305,7 @@ void CSong::DrawInfo()
 
 /// <summary>
 /// Draw the song play time and BPM
+/// TODO: Merge with DrawInfo(), both are displayed in the same area
 /// </summary>
 /// <param name="pDC"></param>
 void CSong::DrawPlayTimeCounter(CDC* pDC)

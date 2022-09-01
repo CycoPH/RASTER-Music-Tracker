@@ -147,6 +147,7 @@
 #define MPLAY_SAPR_BLOCK	252	//SAPR dump from selection block (loop optional)
 #define MPLAY_SAPR_BOOKMARK	251	//SAPR dump from bookmak position
 
+#define IOTYPE_NONE			0			// No export has been done yet
 #define IOTYPE_RMT			1
 #define IOTYPE_RMW			2
 #define IOTYPE_RMTSTRIPPED	3
@@ -155,6 +156,7 @@
 #define IOTYPE_TXT			6
 #define IOTYPE_ASM			7
 #define IOTYPE_RMF			8
+#define IOTYPE_ASM_RMTPLAYER 9
 
 #define IOTYPE_SAPR			9
 #define IOTYPE_LZSS			10
@@ -166,6 +168,9 @@
 #define IOINSTR_RTI			1		//corresponding IOTYPE_RMT
 #define IOINSTR_RMW			2		//corresponding IOTYPE_RMW
 #define IOINSTR_TXT			6		//corresponding IOTYPE_TXT
+
+#define ASSEMBLER_FORMAT_ATASM	0
+#define ASSEMBLER_FORMAT_XASM	1
 
 #define MAXSUBSONGS			128		//in exported SAP maximum number of subsongs
 
@@ -244,3 +249,30 @@
 #define	ENV_Y			5
 #define	ENV_FILTER		6
 #define	ENV_PORTAMENTO	7
+
+// ----------------------------------------------------------------------------
+// Temperament definitions, used for tuning calculations 
+#define NO_TEMPERAMENT	0					//No temperament assumes the value of 0, as Equal Temperament
+#define TUNING_PRESETS	29					//Total number of temperaments available
+#define TUNING_CUSTOM	TUNING_PRESETS		//Custom Temperament using Ratio is assumed otherwise
+#define PRESETS_LENGTH	20 + 1 				//Length of the largest preset table, used for the 2 dimensional array boundaries 
+
+// ----------------------------------------------------------------------------
+// Timbre definitions, used for tuning calculations
+// The values also define which is the appropriate Distortion (AUDC) to use
+// Example: "audc = TIMBRE_BUZZY_C & 0xF0" 
+// The value of audc is then 0xC0, which corresponds to Distortion C 
+//
+#define TIMBRE_PINK_NOISE		0x00	// Distortion 0, by default
+#define TIMBRE_BROWNIAN_NOISE	0x01	// (MOD7 && POLY9), Distortion 0
+#define TIMBRE_FUZZY_NOISE		0x02	// (!MOD7 && POLY9), Distortion 0
+#define TIMBRE_BELL				0x20	// (!MOD31), Distortion 2, by default
+#define TIMBRE_BUZZY_4			0x40	// (!MOD3 && !MOD5),  used by Distortion 4, this mode is actually identical to Distortion C (Gritty) 
+#define TIMBRE_SMOOTH_4			0x41	// (MOD3 && !MOD5), used by Distortion 4, this mode is actually identical to Distortion C (Buzzy) 
+#define TIMBRE_WHITE_NOISE		0x80	// Distortion 8, by default
+#define TIMBRE_METALLIC_NOISE	0x81	// (MOD7 && POLY9), Distortion 8 
+#define TIMBRE_BUZZY_NOISE		0x82	// (!MOD7 && POLY9), Distortion 8
+#define TIMBRE_PURE				0xA0	// Distortion A, by default 
+#define TIMBRE_GRITTY_C			0xC0	// (!MOD3 && !MOD5), also known as RMT Distortion E
+#define TIMBRE_BUZZY_C			0xC1	// (MOD3 && !MOD5), also known as RMT Distortion C
+#define TIMBRE_UNSTABLE_C		0xC2	// (!MOD3 && MOD5), must be avoided unless there is a purpose for it

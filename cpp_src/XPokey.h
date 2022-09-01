@@ -22,7 +22,7 @@ extern int loops;
 #define CHANNELS		2
 #define BITRESOLUTION	8
 #define OUTPUTFREQ		44100		//22050		//44100
-#define BUFFER_SIZE		0x4000		//must be a power of 2
+#define BUFFER_SIZE		0x8000		//must be a power of 2
 #define CHUNK_SIZE_NTSC		BITRESOLUTION/8*CHANNELS*OUTPUTFREQ/60		//sixties (CHUNK_SIZE (tm) by VinsCool lol) 
 #define CHUNK_SIZE_PAL		BITRESOLUTION/8*CHANNELS*OUTPUTFREQ/50		//fifties (CHUNK_SIZE (tm) by JirkaS)
 
