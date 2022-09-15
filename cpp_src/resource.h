@@ -350,6 +350,8 @@
 #define ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS 32905
 #define ID_Menu                         32906
 #define ID_VIEW_TUNING                  32907
+#define ID_BUTTON32910                  32910
+#define ID_FILE_EXPORT                  32910
 #define IDS_RMTVERSION                  61446
 #define IDS_RMTAUTHOR                   61447
 
@@ -359,7 +361,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        171
-#define _APS_NEXT_COMMAND_VALUE         32908
+#define _APS_NEXT_COMMAND_VALUE         32911
 #define _APS_NEXT_CONTROL_VALUE         1162
 #define _APS_NEXT_SYMED_VALUE           105
 #endif

@@ -327,7 +327,7 @@ public:
 
 private:
 	int m_song[SONGLEN][SONGTRACKS];
-	int m_songgo[SONGLEN];					//if> = 0, then GO applies
+	int m_songgo[SONGLEN];						// If >= 0, then GO applies
 
 	int m_songactiveline;
 	int volatile m_songplayline;				// Which line of the song is currently being played

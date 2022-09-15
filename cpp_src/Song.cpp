@@ -143,7 +143,7 @@ void CSong::ClearSong(int numOfTracks)
 	m_songnamecur = 0;
 
 	m_filename = "";
-	m_filetype = 0;	//none
+	m_filetype = IOTYPE_NONE;
 	m_lastExportType = IOTYPE_NONE;
 
 	m_TracksOrderChange_songlinefrom = 0x00;

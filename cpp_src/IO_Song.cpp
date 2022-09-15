@@ -34,8 +34,6 @@ extern CTrackClipboard g_TrackClipboard;
 extern CXPokey g_Pokey;
 extern CRmtMidi g_Midi;
 
-
-
 void StrToAtariVideo(char* txt, int count)
 {
 	char a;
@@ -48,8 +46,6 @@ void StrToAtariVideo(char* txt, int count)
 		txt[i] = a;
 	}
 }
-
-
 
 int CSong::SongToAta(unsigned char* dest, int max, int adr)
 {
@@ -148,39 +144,40 @@ void CSong::FileReload()
 	if (answer == IDYES)
 	{
 		CString filename = m_filename;
-		FileOpen((LPCTSTR)filename, 0); //without Warning for changes
+		FileOpen((LPCTSTR)filename, 0); // Without Warning for changes
 	}
 }
 
 void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 {
-	//stop the music first
+	// Stop the music first
 	Stop();
 
 	if (warnOfUnsavedChanges && WarnUnsavedChanges()) return;
 
 	// Open the file open dialog with *.rmt, *.txt and *.rmw options
-	CFileDialog fid(TRUE,
+	CFileDialog dlg(TRUE,
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY,
 		"RMT song files (*.rmt)|*.rmt|TXT song files (*.txt)|*.txt|RMW song work files (*.rmw)|*.rmw||");
-	fid.m_ofn.lpstrTitle = "Load song file";
-	if (g_lastloadpath_songs != "")
-		fid.m_ofn.lpstrInitialDir = g_lastloadpath_songs;
+	dlg.m_ofn.lpstrTitle = "Load song file";
+
+	if (!g_lastLoadPath_Songs.IsEmpty())
+		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
 	else
-		if (g_path_songs != "") fid.m_ofn.lpstrInitialDir = g_path_songs;
+		if (!g_defaultSongsPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
 
-	if (m_filetype == IOTYPE_RMT) fid.m_ofn.nFilterIndex = 1;
-	if (m_filetype == IOTYPE_TXT) fid.m_ofn.nFilterIndex = 2;
-	if (m_filetype == IOTYPE_RMW) fid.m_ofn.nFilterIndex = 3;
+	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = 1;
+	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = 2;
+	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = 3;
 
-	CString fn = "";
+	CString fileToLoad = "";
 	int formatChoiceIndexFromDialog = 0;
 	if (filename)
 	{
-		fn = filename;
-		CString ext = fn.Right(4);
+		fileToLoad = filename;
+		CString ext = fileToLoad.Right(4);
 		ext.MakeLower();
 		if (ext == ".rmt") formatChoiceIndexFromDialog = 1;
 		else
@@ -190,76 +187,71 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 	}
 	else
 	{
-		//if not ok, it's over
-		if (fid.DoModal() == IDOK)
-		{
-			fn = fid.GetPathName();
-			formatChoiceIndexFromDialog = fid.m_ofn.nFilterIndex;
-		}
+		// If not ok, it's over
+		if (dlg.DoModal() != IDOK)
+			return;
+
+		fileToLoad = dlg.GetPathName();
+		formatChoiceIndexFromDialog = dlg.m_ofn.nFilterIndex;
 	}
 
-	if ((fn != "") && formatChoiceIndexFromDialog) //only when a file was selected in the FileDialog or specified at startup
+	// Only when a file was selected in the FileDialog or specified at startup
+	if (!fileToLoad.IsEmpty() && formatChoiceIndexFromDialog) 
 	{
-		//uses fn what was selected in the FileDialog or what was specified when running //fid.GetPathName();
-		g_lastloadpath_songs = GetFilePath(fn); //direct way
+		// Use filename from the FileDialog or from the command line
+		g_lastLoadPath_Songs = GetFilePath(fileToLoad);
 
 		// Make sure .rmt, .txt or .rmw file was selected
 		if (formatChoiceIndexFromDialog < 1 || formatChoiceIndexFromDialog > 3) return;
 
 		// Open the input file in binary format (even the text file)
-		ifstream in(fn, ios::binary);
+		ifstream in(fileToLoad, ios::binary);
 		if (!in)
 		{
-			MessageBox(g_hwnd, "Can't open this file: " + fn, "Open error", MB_ICONERROR);
+			MessageBox(g_hwnd, "Can't open this file: " + fileToLoad, "Open error", MB_ICONERROR);
 			return;
 		}
 
-		// deletes the current song
+		// Deletes the current song
 		ClearSong(g_tracks4_8);
 
 		int loadResult;
 		switch (formatChoiceIndexFromDialog)
 		{
-			case 1: //first choice in Dialog (RMT)
+			case 1: // 1st choice in Dialog (RMT)
 				loadResult = LoadRMT(in);
 				m_filetype = IOTYPE_RMT;
 				break;
-			case 2: //second choice in Dialog (TXT)
+			case 2: // 2nd choice in Dialog (TXT)
 				loadResult = LoadTxt(in);
 				m_filetype = IOTYPE_TXT;
 				break;
-			case 3: //third choice in Dialog (RMW)
+			case 3: // 3rd choice in Dialog (RMW)
 				loadResult = LoadRMW(in);
 				m_filetype = IOTYPE_RMW;
 				break;
 			default:
 				loadResult = 0;
 		}
+		in.close();
+
 		if (!loadResult)
 		{
-			//something in the Load function failed
-			//MessageBoxA(g_hwnd,"Failed to open file", "ERROR",MB_ICONERROR);
-			ClearSong(g_tracks4_8);		//erases everything
+			// Something in the Load function failed
+			ClearSong(g_tracks4_8);		// Erases everything
 			SetRMTTitle();
-			g_screenupdate = 1;	//must refresh
+			g_screenupdate = 1;			// Must refresh
 			return;
 		}
 
-		in.close();
-		m_filename = fn;
-
-		//init speed
-		m_speed = m_mainSpeed;
-
-		//window name
-		SetRMTTitle();
-
-		//all channels ON (unmute all)
-		SetChannelOnOff(-1, 1);		//-1 = all, 1 = on
+		m_filename = fileToLoad;
+		m_speed = m_mainSpeed;			// Init speed
+		SetRMTTitle();					// Window name
+		SetChannelOnOff(-1, 1);			// All channels ON (unmute all) -1 = all, 1 = on
 
 		if (m_instrumentSpeed > 0x04)
 		{
-			//Allow RMT to support instrument speed up to 8, but warn when it's above 4. Pressing "No" resets the value to 1.
+			// Allow RMT to support instrument speed up to 8, but warn when it's above 4. Pressing "No" resets the value to 1.
 			int r = MessageBox(g_hwnd, "Instrument speed values above 4 are not officially supported by RMT.\nThis may cause compatibility issues.\nDo you want keep this nonstandard speed anyway?", "Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION);
 			if (r != IDYES)
 			{
@@ -274,17 +266,17 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 
 void CSong::FileSave()
 {
-	//stop the music first
+	// Stop the music first
 	Stop();
 
-	//if the file does not yet exist, prompt the "save as" dialog first
-	if (m_filename == "" || m_filetype == 0)
+	// If the song has no filename, prompt the "save as" dialog first
+	if (m_filename.IsEmpty() || m_filetype == IOTYPE_NONE)
 	{
 		FileSaveAs();
 		return;
 	}
 
-	//if the RMT module hasn't met the conditions required to be valid, it won't be saved/overwritten
+	// If the RMT module hasn't met the conditions required to be valid, it won't be saved/overwritten
 	if (m_filetype == IOTYPE_RMT && !TestBeforeFileSave())
 	{
 		MessageBox(g_hwnd, "Warning!\nNo data has been saved!", "Warning", MB_ICONEXCLAMATION);
@@ -292,7 +284,7 @@ void CSong::FileSave()
 		return;
 	}
 
-	//Allow saving files with speed values above 4, up to 8, which will also trigger a warning message, but it will save with no problem.
+	// Allow saving files with speed values above 4, up to 8, which will also trigger a warning message, but it will save with no problem.
 	if (m_instrumentSpeed > 0x04)
 	{
 		int r = MessageBox(g_hwnd, "Instrument speed values above 4 are not officially supported by RMT.\nThis may cause compatibility issues.\nDo you want to save anyway?", "Warning", MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION);
@@ -304,7 +296,7 @@ void CSong::FileSave()
 
 	}
 
-	//create the file to save, iso::binary will be assumed if the format isn't TXT
+	// Create the file to save, iso::binary will be assumed if the format isn't TXT
 	ofstream out(m_filename, (m_filetype == IOTYPE_TXT) ? ios::out : ios::binary);
 	if (!out)
 	{
@@ -312,63 +304,62 @@ void CSong::FileSave()
 		return;
 	}
 
-	int r = 0;
+	int saveResult = 0;
 	switch (m_filetype)
 	{
 		case IOTYPE_RMT: //RMT
-			r = ExportV2(out, IOTYPE_RMT);
+			saveResult = ExportV2(out, IOTYPE_RMT);
 			break;
 
 		case IOTYPE_TXT: //TXT
-			r = SaveTxt(out);
+			saveResult = SaveTxt(out);
 			break;
 
 		case IOTYPE_RMW: //RMW
-			//remembers the current octave and volume for the active instrument (for saving to RMW) 
-			//because it is only saved when the instrument is changed and could change the octave or volume before saving without subsequently changing the current instrument
+			// NOTE:
+			// Remembers the current octave and volume for the active instrument (for saving to RMW) 
+			// It is only saved when the instrument is changed and could change the octave or volume before saving without subsequently changing the current instrument
 			g_Instruments.MemorizeOctaveAndVolume(m_activeinstr, m_octave, m_volume);
-			//and now saves:
-			r = SaveRMW(out);
+			saveResult = SaveRMW(out);
 			break;
 	}
 
+	// Closing only when "out" is open (because with IOTYPE_RMT it can be closed earlier)
+	if (out.is_open()) out.close();
+
 	//TODO: add a method to prevent deleting a valid .rmt by accident when a stripped .rmt export was aborted
 
-	if (!r) //failed to save
+	if (!saveResult) //failed to save
 	{
-		out.close();
 		DeleteFile(m_filename);
 		MessageBox(g_hwnd, "RMT save aborted.\nFile was deleted, beware of data loss!", "Save aborted", MB_ICONEXCLAMATION);
 	}
 	else	//saved successfully
-		g_changes = 0;	//changes have been saved
+		g_changes = 0;	// Changes have been saved
 
 	SetRMTTitle();
-
-	//closing only when "out" is open (because with IOTYPE_RMT it can be closed earlier)
-	if (out.is_open()) out.close();
 }
 
 void CSong::FileSaveAs()
 {
-	//stop the music first
+	// Stop the music first
 	Stop();
 
-	CFileDialog fod(FALSE,
+	CFileDialog dlg(FALSE,
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
 		"RMT song file (*.rmt)|*.rmt|TXT song files (*.txt)|*.txt|RMW song work file (*.rmw)|*.rmw||");
-	fod.m_ofn.lpstrTitle = "Save song as...";
+	dlg.m_ofn.lpstrTitle = "Save song as...";
 
-	if (g_lastloadpath_songs != "")
-		fod.m_ofn.lpstrInitialDir = g_lastloadpath_songs;
+	if (!g_lastLoadPath_Songs.IsEmpty())
+		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
 	else
-		if (g_path_songs != "") fod.m_ofn.lpstrInitialDir = g_path_songs;
+		if (!g_defaultSongsPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
 
-	//specifies the name of the file according to the last saved one
+	// Specifies the name of the file according to the last saved one
 	char filenamebuff[1024];
-	if (m_filename != "")
+	if (!m_filename.IsEmpty())
 	{
 		int pos = m_filename.ReverseFind('\\');
 		if (pos < 0) pos = m_filename.ReverseFind('/');
@@ -377,29 +368,29 @@ void CSong::FileSaveAs()
 			CString s = m_filename.Mid(pos + 1);
 			memset(filenamebuff, 0, 1024);
 			strcpy(filenamebuff, (char*)(LPCTSTR)s);
-			fod.m_ofn.lpstrFile = filenamebuff;
-			fod.m_ofn.nMaxFile = 1020;	//4 bytes less, just to make sure ;-)
+			dlg.m_ofn.lpstrFile = filenamebuff;
+			dlg.m_ofn.nMaxFile = 1020;	//4 bytes less, just to make sure ;-)
 		}
 	}
 
-	//prefers the type according to the last saved
-	if (m_filetype == IOTYPE_RMT) fod.m_ofn.nFilterIndex = 1;
-	if (m_filetype == IOTYPE_TXT) fod.m_ofn.nFilterIndex = 2;
-	if (m_filetype == IOTYPE_RMW) fod.m_ofn.nFilterIndex = 3;
+	// Prefers the type according to the last saved
+	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = 1;
+	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = 2;
+	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = 3;
 
 	//if not ok, nothing will be saved
-	if (fod.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK)
 	{
-		int type = fod.m_ofn.nFilterIndex;
+		int type = dlg.m_ofn.nFilterIndex;
 		if (type < 1 || type > 3) return;
 
-		m_filename = fod.GetPathName();
+		m_filename = dlg.GetPathName();
 		const char* exttype[] = { ".rmt",".txt",".rmw" };
 		CString ext = m_filename.Right(4);
 		ext.MakeLower();
 		if (ext != exttype[type - 1]) m_filename += exttype[type - 1];
 
-		g_lastloadpath_songs = GetFilePath(m_filename); //direct way
+		g_lastLoadPath_Songs = GetFilePath(m_filename); //direct way
 
 		//TODO: fix saving the TXT format in a future version
 		/*
@@ -434,122 +425,126 @@ void CSong::FileSaveAs()
 	}
 }
 
+/// <summary>
+/// Popup dialog asking for parameters to init a new song.
+/// </summary>
 void CSong::FileNew()
 {
-	//stop the music first
+	// Stop the music first
 	Stop();
 
 	//if the last changes were not saved, nothing will be created
 	if (WarnUnsavedChanges()) return;
 
 	CFileNewDlg dlg;
-	if (dlg.DoModal() == IDOK)
-	{
-		g_Tracks.m_maxTrackLength = dlg.m_maxtracklen;
-		//g_cursoractview = g_Tracks.m_maxtracklen / 2;
+	if (dlg.DoModal() != IDOK)
+		return;
+	
+	// Apply the settings and reset the song data
+	g_Tracks.m_maxTrackLength = dlg.m_maxTrackLength;
 
-		int i = dlg.m_combotype;
-		g_tracks4_8 = (i == 0) ? 4 : 8;
-		ClearSong(g_tracks4_8);
-		SetRMTTitle();
+	g_tracks4_8 = (dlg.m_comboMonoOrStereo == 0) ? 4 : 8;
+	ClearSong(g_tracks4_8);
+	SetRMTTitle();
 
-		//automatically create 1 songline of empty patterns
-		for (i = 0; i < g_tracks4_8; i++) m_song[0][i] = i;
+	// Automatically create 1 songline of empty patterns
+	for (int i = 0; i < g_tracks4_8; i++) m_song[0][i] = i;
 
-		//set the goto to the first line 
-		m_songgo[1] = 0;
+	// Set the goto to the first line 
+	m_songgo[1] = 0;
 
-		//all channels ON (unmute all)
-		SetChannelOnOff(-1, 1);		//-1 = all, 1 = on
+	// All channels ON (unmute all)
+	SetChannelOnOff(-1, 1);		// -1 = all, 1 = on
 
-		//delete undo history
-		g_Undo.Clear();
+	// Delete undo history
+	g_Undo.Clear();
 
-		//refresh the screen 
-		g_screenupdate = 1;
-	}
+	// Refresh the screen 
+	g_screenupdate = 1;
 }
 
-int l_lastimporttypeidx = -1;		//so that during the next import it has the pre-selected type that it imported last
 
 void CSong::FileImport()
 {
-	//stop the music first
+	static int l_lastImportTypeIndex = -1;		// Save the import setting for the next import so that the pre-selected type is preselected
+	
+	// Stop the music first
 	Stop();
 
 	if (WarnUnsavedChanges()) return;
 
-	CFileDialog fid(TRUE,
+	CFileDialog dlg(TRUE,
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY,
 		"ProTracker Modules (*.mod)|*.mod|TMC song files (*.tmc,*.tm8)|*.tmc;*.tm8||");
-	fid.m_ofn.lpstrTitle = "Import song file";
-	if (g_lastloadpath_songs != "")
-		fid.m_ofn.lpstrInitialDir = g_lastloadpath_songs;
-	else
-		if (g_path_songs != "") fid.m_ofn.lpstrInitialDir = g_path_songs;
+	dlg.m_ofn.lpstrTitle = "Import song file";
 
-	if (l_lastimporttypeidx >= 0) fid.m_ofn.nFilterIndex = l_lastimporttypeidx;
+	if (!g_lastLoadPath_Songs.IsEmpty())
+		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
+	else if (!g_defaultSongsPath.IsEmpty()) 
+		dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
+
+	if (l_lastImportTypeIndex >= 0) dlg.m_ofn.nFilterIndex = l_lastImportTypeIndex;		// Restore the last imported file type
 
 	//if not ok, nothing will be imported
-	if (fid.DoModal() == IDOK)
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	Stop();
+
+	CString fn;
+	fn = dlg.GetPathName();
+	g_lastLoadPath_Songs = GetFilePath(fn);	//direct way
+
+	int type = dlg.m_ofn.nFilterIndex;
+	if (type < 1 || type>2) return;
+
+	l_lastImportTypeIndex = type;
+
+	ifstream in(fn, ios::binary);
+	if (!in)
 	{
-		Stop();
-
-		CString fn;
-		fn = fid.GetPathName();
-		g_lastloadpath_songs = GetFilePath(fn);	//direct way
-
-		int type = fid.m_ofn.nFilterIndex;
-		if (type < 1 || type>2) return;
-
-		l_lastimporttypeidx = type;
-
-		ifstream in(fn, ios::binary);
-		if (!in)
-		{
-			MessageBox(g_hwnd, "Can't open this file: " + fn, "Open error", MB_ICONERROR);
-			return;
-		}
-
-		int r = 0;
-
-		switch (type)
-		{
-			case 1: //first choice in Dialog (MOD)
-
-				r = ImportMOD(in);
-
-				break;
-			case 2: //second choice in Dialog (TMC)
-
-				r = ImportTMC(in);
-
-				break;
-			case 3: //third choice in Dialog (nothing)
-				break;
-		}
-
-		in.close();
-		m_filename = "";
-
-		if (!r)	//import failed?
-			ClearSong(g_tracks4_8);			//delete everything
-		else
-		{
-			//init speed
-			m_speed = m_mainSpeed;
-
-			//window name
-			AfxGetApp()->GetMainWnd()->SetWindowText("Imported " + fn);
-			//SetRMTTitle();
-		}
-		//all channels ON (unmute all)
-		SetChannelOnOff(-1, 1);		//-1 = all, 1 = on
-
-		g_screenupdate = 1;
+		MessageBox(g_hwnd, "Can't open this file: " + fn, "Open error", MB_ICONERROR);
+		return;
 	}
+
+	int r = 0;
+
+	switch (type)
+	{
+		case 1: //first choice in Dialog (MOD)
+
+			r = ImportMOD(in);
+
+			break;
+		case 2: //second choice in Dialog (TMC)
+
+			r = ImportTMC(in);
+
+			break;
+		case 3: //third choice in Dialog (nothing)
+			break;
+	}
+
+	in.close();
+	m_filename = "";
+
+	if (!r)	//import failed?
+		ClearSong(g_tracks4_8);			//delete everything
+	else
+	{
+		//init speed
+		m_speed = m_mainSpeed;
+
+		//window name
+		AfxGetApp()->GetMainWnd()->SetWindowText("Imported " + fn);
+		//SetRMTTitle();
+	}
+	//all channels ON (unmute all)
+	SetChannelOnOff(-1, 1);		//-1 = all, 1 = on
+
+	g_screenupdate = 1;
 }
 
 
@@ -580,10 +575,10 @@ void CSong::FileExportAs()
 
 	fod.m_ofn.lpstrTitle = "Export song as...";
 
-	if (g_lastloadpath_songs != "")
-		fod.m_ofn.lpstrInitialDir = g_lastloadpath_songs;
+	if (g_lastLoadPath_Songs != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
 	else
-		if (g_path_songs != "") fod.m_ofn.lpstrInitialDir = g_path_songs;
+		if (g_defaultSongsPath != "") fod.m_ofn.lpstrInitialDir = g_defaultSongsPath;
 
 	if (m_lastExportType == IOTYPE_RMTSTRIPPED) fod.m_ofn.nFilterIndex = 1;
 	if (m_lastExportType == IOTYPE_ASM) fod.m_ofn.nFilterIndex = 2;
@@ -609,7 +604,7 @@ void CSong::FileExportAs()
 		ext.MakeLower();
 		if (ext != exttype[type - 1]) fn += exttype[type - 1];
 
-		g_lastloadpath_songs = GetFilePath(fn); //direct way
+		g_lastLoadPath_Songs = GetFilePath(fn); //direct way
 
 		ofstream out(fn, ios::binary);
 		if (!out)
@@ -681,10 +676,10 @@ void CSong::FileInstrumentSave()
 		"RMT instrument file (*.rti)|*.rti||");
 	fod.m_ofn.lpstrTitle = "Save RMT instrument file";
 
-	if (g_lastloadpath_instruments != "")
-		fod.m_ofn.lpstrInitialDir = g_lastloadpath_instruments;
+	if (g_lastLoadPath_Instruments != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
 	else
-		if (g_path_instruments) fod.m_ofn.lpstrInitialDir = g_path_instruments;
+		if (g_defaultInstrumentsPath) fod.m_ofn.lpstrInitialDir = g_defaultInstrumentsPath;
 
 	//if it's not ok, nothing is saved
 	if (fod.DoModal() == IDOK)
@@ -695,7 +690,7 @@ void CSong::FileInstrumentSave()
 		ext.MakeLower();
 		if (ext != ".rti") fn += ".rti";
 
-		g_lastloadpath_instruments = GetFilePath(fn);	//direct way
+		g_lastLoadPath_Instruments = GetFilePath(fn);	//direct way
 
 		ofstream ou(fn, ios::binary);
 		if (!ou)
@@ -721,10 +716,10 @@ void CSong::FileInstrumentLoad()
 		OFN_HIDEREADONLY,
 		"RMT instrument files (*.rti)|*.rti||");
 	fid.m_ofn.lpstrTitle = "Load RMT instrument file";
-	if (g_lastloadpath_instruments != "")
-		fid.m_ofn.lpstrInitialDir = g_lastloadpath_instruments;
+	if (g_lastLoadPath_Instruments != "")
+		fid.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
 	else
-		if (g_path_instruments) fid.m_ofn.lpstrInitialDir = g_path_instruments;
+		if (g_defaultInstrumentsPath) fid.m_ofn.lpstrInitialDir = g_defaultInstrumentsPath;
 
 	//if it's not ok, nothing will be loaded
 	if (fid.DoModal() == IDOK)
@@ -733,7 +728,7 @@ void CSong::FileInstrumentLoad()
 
 		CString fn;
 		fn = fid.GetPathName();
-		g_lastloadpath_instruments = GetFilePath(fn);	//direct way
+		g_lastLoadPath_Instruments = GetFilePath(fn);	//direct way
 
 		ifstream in(fn, ios::binary);
 		if (!in)
@@ -769,11 +764,11 @@ void CSong::FileTrackSave()
 		"TXT track file (*.txt)|*.txt||");
 	fod.m_ofn.lpstrTitle = "Save TXT track file";
 
-	if (g_lastloadpath_tracks != "")
-		fod.m_ofn.lpstrInitialDir = g_lastloadpath_tracks;
+	if (g_lastLoadPath_Tracks != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
 	else
-		if (g_path_tracks != "")
-			fod.m_ofn.lpstrInitialDir = g_path_tracks;
+		if (g_defaultTracksPath != "")
+			fod.m_ofn.lpstrInitialDir = g_defaultTracksPath;
 
 	//if not ok, nothing will be saved
 	if (fod.DoModal() == IDOK)
@@ -784,7 +779,7 @@ void CSong::FileTrackSave()
 		ext.MakeLower();
 		if (ext != ".txt") fn += ".txt";
 
-		g_lastloadpath_tracks = GetFilePath(fn);	//direct way
+		g_lastLoadPath_Tracks = GetFilePath(fn);	//direct way
 
 		ofstream ou(fn);	//text mode by default
 		if (!ou)
@@ -813,11 +808,11 @@ void CSong::FileTrackLoad()
 		OFN_HIDEREADONLY,
 		"TXT track files (*.txt)|*.txt||");
 	fid.m_ofn.lpstrTitle = "Load TXT track file";
-	if (g_lastloadpath_tracks != "")
-		fid.m_ofn.lpstrInitialDir = g_lastloadpath_tracks;
+	if (g_lastLoadPath_Tracks != "")
+		fid.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
 	else
-	if (g_path_tracks != "")
-		fid.m_ofn.lpstrInitialDir = g_path_tracks;
+	if (g_defaultTracksPath != "")
+		fid.m_ofn.lpstrInitialDir = g_defaultTracksPath;
 
 	//if not ok, nothing will be loaded
 	if (fid.DoModal() == IDOK)
@@ -826,7 +821,7 @@ void CSong::FileTrackLoad()
 
 		CString fn;
 		fn = fid.GetPathName();
-		g_lastloadpath_tracks = GetFilePath(fn);	//direct way
+		g_lastLoadPath_Tracks = GetFilePath(fn);	//direct way
 		ifstream in(fn);	//text mode by default
 		if (!in)
 		{
