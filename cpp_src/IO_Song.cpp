@@ -1416,6 +1416,7 @@ bool CSong::ExportAsStrippedRMT(ofstream& ou, tExportDescription* exportStripped
 	dlg.m_song = this;
 	dlg.m_filename = (char*)filename;
 	dlg.m_sfxSupport = g_rmtstripped_sfx;
+	dlg.m_assemblerFormat = g_AsmFormat;
 
 	// Stripped RMT data
 	dlg.m_moduleLengthForStrippedRMT = exportStrippedDesc->firstByteAfterModule - exportStrippedDesc->targetAddrOfModule;
@@ -1437,6 +1438,7 @@ bool CSong::ExportAsStrippedRMT(ofstream& ou, tExportDescription* exportStripped
 	g_rmtstripped_sfx = dlg.m_sfxSupport;
 	g_rmtstripped_gvf = dlg.m_globalVolumeFade;
 	g_rmtstripped_nos = dlg.m_noStartingSongLine;
+	g_AsmFormat = dlg.m_assemblerFormat;
 
 	// Now we can regenerate the RMT module with the selected configuration
 	// - known start address

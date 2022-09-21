@@ -59,7 +59,8 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CExpRMTDlg)
-	enum { IDD = IDD_EXPRMT };
+	enum { IDD = IDD_EXPORT_STRIPPED_RMT };
+	CComboBox m_cmbAsmFormat;
 	CButton	m_c_gvf;
 	CButton	m_c_nos;
 	CStatic	m_c_warning;
@@ -72,6 +73,8 @@ public:
 	int m_exportAddr;
 	int m_moduleLengthForStrippedRMT;
 	int m_moduleLengthForSFX;
+
+	int m_assemblerFormat;						// 0 = Atasm, 1 = Xasm
 
 	BOOL m_sfxSupport;
 	BOOL m_globalVolumeFade;
@@ -110,6 +113,8 @@ protected:
 	afx_msg void OnGlobalvolumefade();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnCbnSelchangeComboAsmFormat();
 };
 /////////////////////////////////////////////////////////////////////////////
 // CExpMSXDlg dialog

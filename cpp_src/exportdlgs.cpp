@@ -56,7 +56,6 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CExpRMTDlg dialog
 
-
 CExpRMTDlg::CExpRMTDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CExpRMTDlg::IDD, pParent)
 {
@@ -68,6 +67,7 @@ void CExpRMTDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CExpRMTDlg)
+	DDX_Control(pDX, IDC_COMBO_ASM_FORMAT, m_cmbAsmFormat);
 	DDX_Control(pDX, IDC_GLOBALVOLUMEFADE, m_c_gvf);
 	DDX_Control(pDX, IDC_NOSTARTINGSONGLINE, m_c_nos);
 	DDX_Control(pDX, IDC_WARNING, m_c_warning);
@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CExpRMTDlg, CDialog)
 	ON_BN_CLICKED(IDC_SFX, OnSfx)
 	ON_BN_CLICKED(IDC_NOSTARTINGSONGLINE, OnNostartingsongline)
 	ON_BN_CLICKED(IDC_GLOBALVOLUMEFADE, OnGlobalvolumefade)
+	ON_CBN_SELCHANGE(IDC_COMBO_ASM_FORMAT, OnCbnSelchangeComboAsmFormat)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -105,6 +106,16 @@ BOOL CExpRMTDlg::OnInitDialog()
 	s.Format("%04X", m_exportAddr);
 	m_ctrlExportAddress.SetWindowText(s);
 
+	// Setup the assembler formats
+	int idx = m_cmbAsmFormat.AddString("Atasm");
+	m_cmbAsmFormat.SetItemData(idx, ASSEMBLER_FORMAT_ATASM);
+	idx = m_cmbAsmFormat.AddString("Xasm");
+	m_cmbAsmFormat.SetItemData(idx, ASSEMBLER_FORMAT_XASM);
+
+	if (m_assemblerFormat < 0) m_assemblerFormat = 0;
+	if (m_assemblerFormat > 1) m_assemblerFormat = 1;
+	m_cmbAsmFormat.SetCurSel(m_assemblerFormat);
+
 	ChangeParams();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -120,21 +131,23 @@ void CExpRMTDlg::ChangeParams()
 	m_ctrlExportAddress.GetWindowText(s);
 	int adr = strtoul(s, &ptrToEndInString, 16);		// Parse the HEX address
 
+	int idx = m_cmbAsmFormat.GetCurSel();
+	m_assemblerFormat = m_cmbAsmFormat.GetItemData(idx);
+
 	m_sfxSupport = m_ctrlWithSfx.GetCheck();
 	if (!m_sfxSupport)
 	{
-		//m_c_rmtfeat.SetWindowText(m_rmtfeat);
-		if (adr>0x10000-m_moduleLengthForStrippedRMT) adr = 0x10000-m_moduleLengthForStrippedRMT;
+		if (adr > 0x10000 - m_moduleLengthForStrippedRMT)
+			adr = 0x10000 - m_moduleLengthForStrippedRMT;
 		m_exportAddr = adr;
 		s.Format("=>  $%04X - $%04X , length $%04X (%u bytes)",m_exportAddr,m_exportAddr+m_moduleLengthForStrippedRMT-1,m_moduleLengthForStrippedRMT,m_moduleLengthForStrippedRMT);
 		m_c_warning.SetWindowText("Warning:\nThis output file doesn't contain any unused or empty tracks and instruments, song name and names of all instruments.");
 	}
 	else
 	{
-		//m_c_rmtfeat.SetWindowText(m_rmtfeat2);
-		if (adr>0x10000-m_moduleLengthForSFX) adr = 0x10000-m_moduleLengthForSFX;
+		if (adr > 0x10000 - m_moduleLengthForSFX) adr = 0x10000 - m_moduleLengthForSFX;
 		m_exportAddr = adr;
-		s.Format("=>  $%04X - $%04X , length $%04X (%u bytes)",m_exportAddr,m_exportAddr+m_moduleLengthForSFX-1,m_moduleLengthForSFX,m_moduleLengthForSFX);
+		s.Format("=>  $%04X - $%04X , length $%04X (%u bytes)", m_exportAddr, m_exportAddr + m_moduleLengthForSFX - 1, m_moduleLengthForSFX, m_moduleLengthForSFX);
 		m_c_warning.SetWindowText("Warning:\nThis output file doesn't contain song name and names of all instruments.");
 	}
 	m_c_info.SetWindowText(s);
@@ -144,7 +157,7 @@ void CExpRMTDlg::ChangeParams()
 
 	BYTE *instrsav = (m_sfxSupport)? m_savedInstrFlagsForSFX : m_savedInstrFlagsForStrippedRMT;
 	BYTE *tracksav = (m_sfxSupport)? m_savedTracksFlagsForSFX : m_savedTracksFlagsForStrippedRMT;
-	m_song->ComposeRMTFEATstring(s, m_filename, instrsav, tracksav, m_sfxSupport, m_globalVolumeFade, m_noStartingSongLine, ASSEMBLER_FORMAT_XASM);
+	m_song->ComposeRMTFEATstring(s, m_filename, instrsav, tracksav, m_sfxSupport, m_globalVolumeFade, m_noStartingSongLine, m_assemblerFormat);
 	m_c_rmtfeat.SetWindowText(s);
 }
 
@@ -180,6 +193,12 @@ void CExpRMTDlg::OnCopytoclipboard()
 	m_c_rmtfeat.SetFocus();
 	m_c_rmtfeat.SetSel(0,-1);
 	m_c_rmtfeat.Copy();
+}
+
+
+void CExpRMTDlg::OnCbnSelchangeComboAsmFormat()
+{
+	ChangeParams();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -528,7 +547,6 @@ BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog()
 	// Setup the assembler formats
 	int idx = m_cmbAsmFormat.AddString("Atasm");
 	m_cmbAsmFormat.SetItemData(idx, ASSEMBLER_FORMAT_ATASM);
-
 	idx = m_cmbAsmFormat.AddString("Xasm");
 	m_cmbAsmFormat.SetItemData(idx, ASSEMBLER_FORMAT_XASM);
 
@@ -622,3 +640,5 @@ void CExportRelocatableAsmForRmtPlayer::OnCbnSelchange()
 {
 	ChangeParams();
 }
+
+
