@@ -1112,6 +1112,7 @@ BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
+    BUTTON      ID_FILE_EXPORT_AS
     SEPARATOR
     BUTTON      ID_APP_ABOUT
     SEPARATOR
@@ -1430,6 +1431,11 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_FILE_EXPORT_AS       "Export song to file\nExport"
+END
+
+STRINGTABLE
+BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application\nExit"
 END
@@ -1542,11 +1548,6 @@ STRINGTABLE
 BEGIN
     ID_MIDIONOFF            "MIDI on/off\nMIDI on/off"
     ID_VIEW_CONFIGURATION   "Display the configuration menu"
-END
-
-STRINGTABLE
-BEGIN
-    ID_FILE_EXPORT_AS       "Export song to file"
 END
 
 STRINGTABLE
