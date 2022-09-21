@@ -172,13 +172,13 @@ extern int g_mouse_py;
 extern int g_lastKeyPressed;		//for debugging vk input
 
 extern CString g_prgpath;					//path to the directory from which the program was started (including a slash at the end)
-extern CString g_lastloadpath_songs;		//the path of the last song loaded
-extern CString g_lastloadpath_instruments; //the path of the last instrument loaded
-extern CString g_lastloadpath_tracks;		//the path of the last track loaded
+extern CString g_lastLoadPath_Songs;		//the path of the last song loaded
+extern CString g_lastLoadPath_Instruments; //the path of the last instrument loaded
+extern CString g_lastLoadPath_Tracks;		//the path of the last track loaded
 
-extern CString g_path_songs;		//default path for songs
-extern CString g_path_instruments;	//default path for instruments
-extern CString g_path_tracks;		//default path for tracks
+extern CString g_defaultSongsPath;		//default path for songs
+extern CString g_defaultInstrumentsPath;	//default path for instruments
+extern CString g_defaultTracksPath;		//default path for tracks
 
 extern int g_keyboard_layout;			//Keyboard layout is used by RMT. eg: QWERTY, AZERTY, etc
 extern BOOL g_keyboard_swapenter;		//1 yes, 0 no, probably not needed anymore but will be kept for now

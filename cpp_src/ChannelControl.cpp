@@ -17,7 +17,7 @@ void SetChannelOnOff(int ch, int onoff)
 {
 	if (ch < 0)
 	{
-		//all channels
+		// All channels
 		if (onoff >= 0)
 			for (int i = 0; i < SONGTRACKS; i++) g_channelon[i] = onoff;// set the given on/off state
 		else

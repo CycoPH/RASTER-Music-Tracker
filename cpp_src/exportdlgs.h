@@ -6,6 +6,8 @@
 #endif // _MSC_VER > 1000
 // ExportDlgs.h : header file
 //
+#include "resource.h"
+#include "General.h"
 
 class CSong;
 

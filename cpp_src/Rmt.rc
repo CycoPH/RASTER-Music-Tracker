@@ -132,7 +132,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,86,50,14
     LTEXT           "Maximal length of tracks",IDC_STATIC,37,17,77,8
     CTEXT           "Warning: Current data will be discarded!",IDC_STATIC,7,55,172,11
-    CTEXT           "This operation could not be undone!",IDC_STATIC,1,69,184,11
+    CTEXT           "This operation cannot be undone!",IDC_STATIC,1,69,184,11
 END
 
 IDD_EXPSAP DIALOGEX 0, 0, 280, 129

@@ -67,7 +67,6 @@ CXPokey::CXPokey()
 	m_rendersound = 0;
 	m_pokey_dll = NULL;
 	m_SoundBuffer = NULL;
-
 }
 
 CXPokey::~CXPokey()
@@ -489,8 +488,9 @@ void CXPokey::DoneSAPR()
 	framecount = 0;	//also reset the framecount once finished
 	loops = 0;		//reset the playback counter
 
-	//clear the allocated memory for the SAP-R dumper, TODO: manage memory dynamically instead
-	for (int i = 0; i < 0xFFFFFF; i++) { SAPRSTREAM[i] = 0x00; }
+	// Clear the allocated memory for the SAP-R dumper, TODO: manage memory dynamically instead
+//	for (int i = 0; i < 0xFFFFFF; i++) { SAPRSTREAM[i] = 0x00; }
+	memset(SAPRSTREAM, 0, sizeof(SAPRSTREAM));
 
 	Atari_InitRMTRoutine();	//reset the Atari memory 
 	SetChannelOnOff(-1, 1);	//switch all channels back on, since they were purposefully turned off during the recording
