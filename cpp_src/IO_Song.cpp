@@ -31,7 +31,10 @@ extern CInstruments	g_Instruments;
 extern CTrackClipboard g_TrackClipboard;
 extern CXPokey g_Pokey;
 extern CRmtMidi g_Midi;
+<<<<<<< HEAD
 extern CPokeyStream g_PokeyStream;
+=======
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 void StrToAtariVideo(char* txt, int count)
 {
@@ -164,8 +167,12 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY,
+<<<<<<< HEAD
 		FILE_LOADSAVE_FILTERS
 	);
+=======
+		"RMT song files (*.rmt)|*.rmt|TXT song files (*.txt)|*.txt|RMW song work files (*.rmw)|*.rmw||");
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 	dlg.m_ofn.lpstrTitle = "Load song file";
 
 	if (!g_lastLoadPath_Songs.IsEmpty())
@@ -173,17 +180,29 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 	else
 		if (!g_defaultSongsPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
 
+<<<<<<< HEAD
 	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_RMT;
 	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_TXT;
 	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_RMW;
+=======
+	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = 1;
+	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = 2;
+	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = 3;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	CString fileToLoad = "";
 	int formatChoiceIndexFromDialog = 0;
 	if (filename)
 	{
 		fileToLoad = filename;
+<<<<<<< HEAD
 		CString ext = fileToLoad.Right(4).MakeLower();
 		if (ext == ".rmt") formatChoiceIndexFromDialog = FILE_LOADSAVE_FILTER_IDX_RMT;
+=======
+		CString ext = fileToLoad.Right(4);
+		ext.MakeLower();
+		if (ext == ".rmt") formatChoiceIndexFromDialog = 1;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 		else
 		if (ext == ".txt") formatChoiceIndexFromDialog = FILE_LOADSAVE_FILTER_IDX_TXT;
 		else
@@ -226,6 +245,7 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 		bool loadedOk = false;
 		switch (formatChoiceIndexFromDialog)
 		{
+<<<<<<< HEAD
 			case FILE_LOADSAVE_FILTER_IDX_RMT: // RMT choice in Dialog
 				loadedOk = LoadRMT(in);
 				m_filetype = IOTYPE_RMT;
@@ -238,14 +258,32 @@ void CSong::FileOpen(const char* filename, BOOL warnOfUnsavedChanges)
 
 			case FILE_LOADSAVE_FILTER_IDX_RMW: // RMW choice in Dialog
 				loadedOk = LoadRMW(in);
+=======
+			case 1: // 1st choice in Dialog (RMT)
+				loadResult = LoadRMT(in);
+				m_filetype = IOTYPE_RMT;
+				break;
+			case 2: // 2nd choice in Dialog (TXT)
+				loadResult = LoadTxt(in);
+				m_filetype = IOTYPE_TXT;
+				break;
+			case 3: // 3rd choice in Dialog (RMW)
+				loadResult = LoadRMW(in);
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 				m_filetype = IOTYPE_RMW;
 				break;
 		}
 		in.close();
 
+<<<<<<< HEAD
 		if (!loadedOk)
 		{
 			// Something in the Load... function failed
+=======
+		if (!loadResult)
+		{
+			// Something in the Load function failed
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 			ClearSong(g_tracks4_8);		// Erases everything
 			SetRMTTitle();
 			g_screenupdate = 1;			// Must refresh
@@ -312,6 +350,7 @@ void CSong::FileSave()
 		return;
 	}
 
+<<<<<<< HEAD
 	bool saveResult = false;
 	switch (m_filetype)
 	{
@@ -324,6 +363,20 @@ void CSong::FileSave()
 			break;
 
 		case IOTYPE_RMW: // RMW
+=======
+	int saveResult = 0;
+	switch (m_filetype)
+	{
+		case IOTYPE_RMT: //RMT
+			saveResult = ExportV2(out, IOTYPE_RMT);
+			break;
+
+		case IOTYPE_TXT: //TXT
+			saveResult = SaveTxt(out);
+			break;
+
+		case IOTYPE_RMW: //RMW
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 			// NOTE:
 			// Remembers the current octave and volume for the active instrument (for saving to RMW) 
 			// It is only saved when the instrument is changed and could change the octave or volume before saving without subsequently changing the current instrument
@@ -334,15 +387,21 @@ void CSong::FileSave()
 
 	// Closing only when "out" is open (because with IOTYPE_RMT it can be closed earlier)
 	if (out.is_open()) out.close();
+<<<<<<< HEAD
 
 	// TODO: add a method to prevent deleting a valid .rmt by accident when a stripped .rmt export was aborted
+=======
+
+	//TODO: add a method to prevent deleting a valid .rmt by accident when a stripped .rmt export was aborted
+
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 	if (!saveResult) //failed to save
 	{
 		DeleteFile(m_filename);
 		MessageBox(g_hwnd, "RMT save aborted.\nFile was deleted, beware of data loss!", "Save aborted", MB_ICONEXCLAMATION);
 	}
 	else	//saved successfully
-		g_changes = 0;	//changes have been saved
+		g_changes = 0;	// Changes have been saved
 
 	SetRMTTitle();
 }
@@ -356,8 +415,12 @@ void CSong::FileSaveAs()
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+<<<<<<< HEAD
 		FILE_LOADSAVE_FILTERS
 	);
+=======
+		"RMT song file (*.rmt)|*.rmt|TXT song files (*.txt)|*.txt|RMW song work file (*.rmw)|*.rmw||");
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 	dlg.m_ofn.lpstrTitle = "Save song as...";
 
 	if (!g_lastLoadPath_Songs.IsEmpty())
@@ -377,6 +440,7 @@ void CSong::FileSaveAs()
 			memset(filenamebuff, 0, 1024);
 			strcpy(filenamebuff, (char*)(LPCTSTR)s);
 			dlg.m_ofn.lpstrFile = filenamebuff;
+<<<<<<< HEAD
 			dlg.m_ofn.nMaxFile = 1020;	// 4 bytes less, just to make sure ;-)
 		}
 	}
@@ -385,14 +449,41 @@ void CSong::FileSaveAs()
 	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_RMT;
 	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_TXT;
 	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = FILE_LOADSAVE_FILTER_IDX_RMW;
+=======
+			dlg.m_ofn.nMaxFile = 1020;	//4 bytes less, just to make sure ;-)
+		}
+	}
+
+	// Prefers the type according to the last saved
+	if (m_filetype == IOTYPE_RMT) dlg.m_ofn.nFilterIndex = 1;
+	if (m_filetype == IOTYPE_TXT) dlg.m_ofn.nFilterIndex = 2;
+	if (m_filetype == IOTYPE_RMW) dlg.m_ofn.nFilterIndex = 3;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	//if not ok, nothing will be saved
 	if (dlg.DoModal() == IDOK)
 	{
+<<<<<<< HEAD
 		// Validate that the file type selection is valid
 		int formatChoiceIndexFromDialog = dlg.m_ofn.nFilterIndex;
 		if (formatChoiceIndexFromDialog < FILE_LOADSAVE_FILTER_IDX_MIN
 			|| formatChoiceIndexFromDialog > FILE_LOADSAVE_FILTER_IDX_MAX)
+=======
+		int type = dlg.m_ofn.nFilterIndex;
+		if (type < 1 || type > 3) return;
+
+		m_filename = dlg.GetPathName();
+		const char* exttype[] = { ".rmt",".txt",".rmw" };
+		CString ext = m_filename.Right(4);
+		ext.MakeLower();
+		if (ext != exttype[type - 1]) m_filename += exttype[type - 1];
+
+		g_lastLoadPath_Songs = GetFilePath(m_filename); //direct way
+
+		//TODO: fix saving the TXT format in a future version
+		/*
+		if (type == 2)
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 		{
 			return;
 		}
@@ -465,9 +556,13 @@ void CSong::FileNew()
 	g_screenupdate = 1;
 }
 
+<<<<<<< HEAD
 /// <summary>
 /// Import Protracker modules or TMC song files
 /// </summary>
+=======
+
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 void CSong::FileImport()
 {
 	static int l_lastImportTypeIndex = -1;		// Save the import setting for the next import so that the pre-selected type is preselected
@@ -481,14 +576,19 @@ void CSong::FileImport()
 		NULL,
 		NULL,
 		OFN_HIDEREADONLY,
+<<<<<<< HEAD
 		FILE_IMPORT_FILTERS
 	);
+=======
+		"ProTracker Modules (*.mod)|*.mod|TMC song files (*.tmc,*.tm8)|*.tmc;*.tm8||");
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 	dlg.m_ofn.lpstrTitle = "Import song file";
 
 	if (!g_lastLoadPath_Songs.IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
 	else if (!g_defaultSongsPath.IsEmpty()) 
 		dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
+<<<<<<< HEAD
 
 	if (l_lastImportTypeIndex >= 0) dlg.m_ofn.nFilterIndex = l_lastImportTypeIndex;		// Restore the last imported file type
 
@@ -501,6 +601,23 @@ void CSong::FileImport()
 
 	int type = dlg.m_ofn.nFilterIndex;
 	if (type < FILE_IMPORT_FILTER_IDX_MIN || type > FILE_IMPORT_FILTER_IDX_MAX) return;
+=======
+
+	if (l_lastImportTypeIndex >= 0) dlg.m_ofn.nFilterIndex = l_lastImportTypeIndex;		// Restore the last imported file type
+
+	//if not ok, nothing will be imported
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	Stop();
+
+	CString fn;
+	fn = dlg.GetPathName();
+	g_lastLoadPath_Songs = GetFilePath(fn);	//direct way
+
+	int type = dlg.m_ofn.nFilterIndex;
+	if (type < 1 || type>2) return;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	l_lastImportTypeIndex = type;
 
@@ -511,6 +628,7 @@ void CSong::FileImport()
 		return;
 	}
 
+<<<<<<< HEAD
 	int importResult = 0;
 	switch (type)
 	{
@@ -519,24 +637,56 @@ void CSong::FileImport()
 			break;
 		case FILE_IMPORT_FILTER_IDX_TMC: // TMC choice in Dialog
 			importResult = ImportTMC(in);
+=======
+	int r = 0;
+
+	switch (type)
+	{
+		case 1: //first choice in Dialog (MOD)
+
+			r = ImportMOD(in);
+
+			break;
+		case 2: //second choice in Dialog (TMC)
+
+			r = ImportTMC(in);
+
+			break;
+		case 3: //third choice in Dialog (nothing)
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 			break;
 	}
 
 	in.close();
 	m_filename = "";
 
+<<<<<<< HEAD
 	if (importResult == 0)				// Import failed?
 		ClearSong(g_tracks4_8);			// Delete everything
 	else
 	{
 		m_speed = m_mainSpeed;			// Init speed
+=======
+	if (!r)	//import failed?
+		ClearSong(g_tracks4_8);			//delete everything
+	else
+	{
+		//init speed
+		m_speed = m_mainSpeed;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 		//window name
 		AfxGetApp()->GetMainWnd()->SetWindowText("Imported " + fn);
 		//SetRMTTitle();
 	}
+<<<<<<< HEAD
 	// All channels ON (unmute all)
 	SetChannelOnOff(-1, 1);		// -1 = all, 1 = on
+=======
+	//all channels ON (unmute all)
+	SetChannelOnOff(-1, 1);		//-1 = all, 1 = on
+
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 	g_screenupdate = 1;
 }
 
@@ -564,10 +714,17 @@ void CSong::FileExportAs()
 
 	dlg.m_ofn.lpstrTitle = "Export song as...";
 
+<<<<<<< HEAD
 	if (!g_lastLoadPath_Songs.IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
 	else
 		if (!g_defaultSongsPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultSongsPath;
+=======
+	if (g_lastLoadPath_Songs != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Songs;
+	else
+		if (g_defaultSongsPath != "") fod.m_ofn.lpstrInitialDir = g_defaultSongsPath;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	if (m_lastExportType == IOTYPE_RMTSTRIPPED) dlg.m_ofn.nFilterIndex = FILE_EXPORT_FILTER_IDX_STRIPPED_RMT;
 	if (m_lastExportType == IOTYPE_ASM) dlg.m_ofn.nFilterIndex = FILE_EXPORT_FILTER_IDX_SIMPLE_ASM;
@@ -583,8 +740,24 @@ void CSong::FileExportAs()
 		CString fn = dlg.GetPathName();
 		int formatChoiceIndexFromDialog = dlg.m_ofn.nFilterIndex;
 
+<<<<<<< HEAD
 		if (formatChoiceIndexFromDialog < FILE_EXPORT_FILTER_IDX_MIN
 			|| formatChoiceIndexFromDialog > FILE_EXPORT_FILTER_IDX_MAX)
+=======
+		if (type < 1 || type > 7) return;
+
+		const char* exttype[] = { ".rmt",".asm",".sapr",".lzss",".sap",".xex",".asm" };
+		int extoff = (type - 1 == 2 || type - 1 == 3) ? 5 : 4;	//fixes the "duplicate extention" bug for 4 characters extention
+
+		CString ext = fn.Right(extoff);
+		ext.MakeLower();
+		if (ext != exttype[type - 1]) fn += exttype[type - 1];
+
+		g_lastLoadPath_Songs = GetFilePath(fn); //direct way
+
+		ofstream out(fn, ios::binary);
+		if (!out)
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 		{
 			return;
 		}
@@ -672,10 +845,17 @@ void CSong::FileInstrumentSave()
 		"RMT instrument file (*.rti)|*.rti||");
 	dlg.m_ofn.lpstrTitle = "Save RMT instrument file";
 
+<<<<<<< HEAD
 	if (!g_lastLoadPath_Instruments.IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
 	else
 		if (!g_defaultInstrumentsPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultInstrumentsPath;
+=======
+	if (g_lastLoadPath_Instruments != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
+	else
+		if (g_defaultInstrumentsPath) fod.m_ofn.lpstrInitialDir = g_defaultInstrumentsPath;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	// If it's not ok, nothing is saved
 	if (dlg.DoModal() == IDOK)
@@ -684,7 +864,11 @@ void CSong::FileInstrumentSave()
 		CString ext = fn.Right(4).MakeLower();
 		if (ext != ".rti") fn += ".rti";
 
+<<<<<<< HEAD
 		g_lastLoadPath_Instruments = GetFilePath(fn);
+=======
+		g_lastLoadPath_Instruments = GetFilePath(fn);	//direct way
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 		ofstream ou(fn, ios::binary);
 		if (!ou)
@@ -712,7 +896,15 @@ void CSong::FileInstrumentLoad()
 		NULL,
 		OFN_HIDEREADONLY,
 		"RMT instrument files (*.rti)|*.rti||");
+<<<<<<< HEAD
 	dlg.m_ofn.lpstrTitle = "Load RMT instrument file";
+=======
+	fid.m_ofn.lpstrTitle = "Load RMT instrument file";
+	if (g_lastLoadPath_Instruments != "")
+		fid.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
+	else
+		if (g_defaultInstrumentsPath) fid.m_ofn.lpstrInitialDir = g_defaultInstrumentsPath;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	if (!g_lastLoadPath_Instruments.IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Instruments;
@@ -724,7 +916,12 @@ void CSong::FileInstrumentLoad()
 	{
 		g_Undo.ChangeInstrument(m_activeinstr, 0, UETYPE_INSTRDATA, 1);
 
+<<<<<<< HEAD
 		CString fn = dlg.GetPathName();
+=======
+		CString fn;
+		fn = fid.GetPathName();
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 		g_lastLoadPath_Instruments = GetFilePath(fn);	//direct way
 
 		ifstream in(fn, ios::binary);
@@ -764,10 +961,18 @@ void CSong::FileTrackSave()
 		"TXT track file (*.txt)|*.txt||");
 	dlg.m_ofn.lpstrTitle = "Save TXT track file";
 
+<<<<<<< HEAD
 	if (!g_lastLoadPath_Tracks.IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
 	else
 		if (!g_defaultTracksPath.IsEmpty()) dlg.m_ofn.lpstrInitialDir = g_defaultTracksPath;
+=======
+	if (g_lastLoadPath_Tracks != "")
+		fod.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
+	else
+		if (g_defaultTracksPath != "")
+			fod.m_ofn.lpstrInitialDir = g_defaultTracksPath;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	//if not ok, nothing will be saved
 	if (dlg.DoModal() == IDOK)
@@ -776,7 +981,11 @@ void CSong::FileTrackSave()
 		CString ext = fn.Right(4).MakeLower();
 		if (ext != ".txt") fn += ".txt";
 
+<<<<<<< HEAD
 		g_lastLoadPath_Tracks = GetFilePath(fn);
+=======
+		g_lastLoadPath_Tracks = GetFilePath(fn);	//direct way
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 		ofstream ou(fn);	// text mode by default
 		if (!ou)
@@ -807,7 +1016,16 @@ void CSong::FileTrackLoad()
 		NULL,
 		OFN_HIDEREADONLY,
 		"TXT track files (*.txt)|*.txt||");
+<<<<<<< HEAD
 	dlg.m_ofn.lpstrTitle = "Load TXT track file";
+=======
+	fid.m_ofn.lpstrTitle = "Load TXT track file";
+	if (g_lastLoadPath_Tracks != "")
+		fid.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
+	else
+	if (g_defaultTracksPath != "")
+		fid.m_ofn.lpstrInitialDir = g_defaultTracksPath;
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 
 	if (!g_lastLoadPath_Tracks .IsEmpty())
 		dlg.m_ofn.lpstrInitialDir = g_lastLoadPath_Tracks;
@@ -819,10 +1037,17 @@ void CSong::FileTrackLoad()
 	{
 		g_Undo.ChangeTrack(0, 0, UETYPE_TRACKSALL, 1);
 
+<<<<<<< HEAD
 		CString fn = dlg.GetPathName();
 		g_lastLoadPath_Tracks = GetFilePath(fn);
 
 		ifstream in(fn);	// text mode by default
+=======
+		CString fn;
+		fn = fid.GetPathName();
+		g_lastLoadPath_Tracks = GetFilePath(fn);	//direct way
+		ifstream in(fn);	//text mode by default
+>>>>>>> af14d016ba06c3027d6fef76da38dc1948126879
 		if (!in)
 		{
 			MessageBox(g_hwnd, "Can't open this file: " + fn, "Open error", MB_ICONERROR);
