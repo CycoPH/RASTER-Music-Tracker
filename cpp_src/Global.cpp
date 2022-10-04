@@ -6,19 +6,8 @@
 #include "PokeyStream.h"
 #include "global.h"
 
-// Helper defines to make the code a bit more readable
-
-
-
-
 unsigned char g_atarimem[65536];
 char g_debugmem[65536];	//debug display of g_atarimem bytes directly, slow and terrible, do not use unless there is a purpose for it 
-
-// Dump Pokey output to a buffer
-unsigned char g_SAPR_Buffer[0xFFFFFF];			// SAP-R Dumper memory, TODO: assign memory dynamically instead, however this doesn't seem to harm anything for now
-int g_SAPR_DumpIntoBuffer = POKEY2BUFFER_STOP;	// 0, the SAPR dumper is disabled; 1, output is currently recorded to memory; 2, recording is finished and will be written to sap file; 3, flag engage the SAPR dumper
-int g_SAPR_FrameCounter = 0;					// SAPR dumper frame counter used for calculations and memory allignment with bytes 
-
 
 BOOL g_closeApplication = 0;			// Set when the application is busy shutting down
 CDC* g_mem_dc = NULL;

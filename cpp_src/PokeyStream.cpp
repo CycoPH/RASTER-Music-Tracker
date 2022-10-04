@@ -43,6 +43,12 @@ void CPokeyStream::Clear()
 
 void CPokeyStream::StartRecording()
 {
+	if (m_StreamBuffer)
+	{
+		free(m_StreamBuffer);
+		m_StreamBuffer = NULL;
+	}
+
 	m_recordState = STREAM_STATE::START;
 	m_BufferSize = 0xFFFFF;
 	m_StreamBuffer = (unsigned char*)calloc(m_BufferSize, 1);
@@ -204,7 +210,11 @@ void CPokeyStream::FinishedRecording()
 	m_SongLoppedCounter = 0;				// Reset the playback counter
 
 	// Clear the allocated memory for the SAP-R dumper, TODO: manage memory dynamically instead
-	memset(g_SAPR_Buffer, 0, sizeof(g_SAPR_Buffer));
+	if (m_StreamBuffer)
+	{
+		free(m_StreamBuffer);
+		m_StreamBuffer = NULL;
+	}
 
 	Atari_InitRMTRoutine();	//reset the Atari memory 
 	SetChannelOnOff(-1, 1);	//switch all channels back on, since they were purposefully turned off during the recording

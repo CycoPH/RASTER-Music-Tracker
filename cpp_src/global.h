@@ -15,11 +15,6 @@
 extern unsigned char g_atarimem[65536];
 extern char g_debugmem[65536];	//debug display of g_atarimem bytes directly, slow and terrible, do not use unless there is a purpose for it 
 
-extern unsigned char g_SAPR_Buffer[0xFFFFFF];	//SAP-R Dumper memory, TODO: assign memory dynamically instead, however this doesn't seem to harm anything for now
-
-extern int g_SAPR_DumpIntoBuffer;		//0, the SAPR dumper is disabled; 1, output is currently recorded to memory; 2, recording is finished and will be written to sap file; 3, flag engage the SAPR dumper
-extern int g_SAPR_FrameCounter;		//SAPR dumper frame counter used for calculations and memory allignment with bytes 
-
 extern BOOL g_closeApplication;
 extern CDC* g_mem_dc;
 extern CDC* g_gfx_dc;
