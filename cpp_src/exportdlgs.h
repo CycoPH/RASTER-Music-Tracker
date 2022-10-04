@@ -51,11 +51,11 @@ protected:
 /////////////////////////////////////////////////////////////////////////////
 // CExpRMTDlg dialog
 
-class CExpRMTDlg : public CDialog
+class CExportStrippedRMTDialog : public CDialog
 {
 // Construction
 public:
-	CExpRMTDlg(CWnd* pParent = NULL);   // standard constructor
+	CExportStrippedRMTDialog(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CExpRMTDlg)

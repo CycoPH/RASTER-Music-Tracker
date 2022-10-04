@@ -56,14 +56,14 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CExpRMTDlg dialog
 
-CExpRMTDlg::CExpRMTDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CExpRMTDlg::IDD, pParent)
+CExportStrippedRMTDialog::CExportStrippedRMTDialog(CWnd* pParent /*=NULL*/)
+	: CDialog(CExportStrippedRMTDialog::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CExpRMTDlg)
 	//}}AFX_DATA_INIT
 }
 
-void CExpRMTDlg::DoDataExchange(CDataExchange* pDX)
+void CExportStrippedRMTDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CExpRMTDlg)
@@ -79,7 +79,7 @@ void CExpRMTDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CExpRMTDlg, CDialog)
+BEGIN_MESSAGE_MAP(CExportStrippedRMTDialog, CDialog)
 	//{{AFX_MSG_MAP(CExpRMTDlg)
 	ON_EN_CHANGE(IDC_ADDR, OnChangeAddr)
 	ON_BN_CLICKED(IDC_COPYTOCLIPBOARD, OnCopytoclipboard)
@@ -93,7 +93,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CExpRMTDlg message handlers
 
-BOOL CExpRMTDlg::OnInitDialog() 
+BOOL CExportStrippedRMTDialog::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
 	
@@ -122,7 +122,7 @@ BOOL CExpRMTDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CExpRMTDlg::ChangeParams()
+void CExportStrippedRMTDialog::ChangeParams()
 {
 	// Transfer all the variables from MFC
 
@@ -161,22 +161,22 @@ void CExpRMTDlg::ChangeParams()
 	m_c_rmtfeat.SetWindowText(s);
 }
 
-void CExpRMTDlg::OnSfx() 
+void CExportStrippedRMTDialog::OnSfx() 
 {
 	ChangeParams();
 }
 
-void CExpRMTDlg::OnGlobalvolumefade() 
+void CExportStrippedRMTDialog::OnGlobalvolumefade() 
 {
 	ChangeParams();
 }
 
-void CExpRMTDlg::OnNostartingsongline() 
+void CExportStrippedRMTDialog::OnNostartingsongline() 
 {
 	ChangeParams();
 }
 
-void CExpRMTDlg::OnChangeAddr() 
+void CExportStrippedRMTDialog::OnChangeAddr() 
 {
 	// TODO: If this is a RICHEDIT control, the control will not
 	// send this notification unless you override the CDialog::OnInitDialog()
@@ -187,7 +187,7 @@ void CExpRMTDlg::OnChangeAddr()
 	ChangeParams();
 }
 
-void CExpRMTDlg::OnCopytoclipboard() 
+void CExportStrippedRMTDialog::OnCopytoclipboard() 
 {
 	// TODO: Add your control notification handler code here
 	m_c_rmtfeat.SetFocus();
@@ -196,7 +196,7 @@ void CExpRMTDlg::OnCopytoclipboard()
 }
 
 
-void CExpRMTDlg::OnCbnSelchangeComboAsmFormat()
+void CExportStrippedRMTDialog::OnCbnSelchangeComboAsmFormat()
 {
 	ChangeParams();
 }

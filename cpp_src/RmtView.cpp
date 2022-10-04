@@ -31,7 +31,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern BOOL g_closeapplication;
+extern BOOL g_closeApplication;
 //#define SCREENUPDATE	g_screenupdate=1
 
 
@@ -978,7 +978,7 @@ void CRmtView::OnInitialUpdate()
 	Sleep(200);	//this will ensure there will be no false positive with the sound initialisation, else it would attempt to check too early and assume the plugins were not initialised
 
 	//Displays the ABOUT dialog if there is no Pokey or 6502 initialized...
-	if (!g_Pokey.GetRenderSound() || !g_is6502)
+	if (!g_Pokey.IsSoundDriverLoaded() || !g_is6502)
 	{
 		AfxGetApp()->GetMainWnd()->PostMessage(WM_COMMAND,ID_APP_ABOUT,0);
 	}
@@ -3163,7 +3163,7 @@ void CRmtView::OnWantExit() //called from the menu File/Exit ID_WANTEXIT instead
 		return; //there is no exit
 	}
 	g_Song.Stop();
-	g_closeapplication = 1;
+	g_closeApplication = 1;
 	g_Song.StopTimer();
 	AfxGetApp()->GetMainWnd()->PostMessage(WM_CLOSE,0,0);
 }

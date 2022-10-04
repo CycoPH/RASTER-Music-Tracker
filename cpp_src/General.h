@@ -158,10 +158,10 @@
 #define IOTYPE_RMF			8
 #define IOTYPE_ASM_RMTPLAYER 9
 
-#define IOTYPE_SAPR			9
-#define IOTYPE_LZSS			10
-#define IOTYPE_LZSS_SAP		11
-#define IOTYPE_LZSS_XEX		12
+#define IOTYPE_SAPR			10
+#define IOTYPE_LZSS			11
+#define IOTYPE_LZSS_SAP		12
+#define IOTYPE_LZSS_XEX		13
 
 #define IOTYPE_TMC			101		//import TMC
 
@@ -318,3 +318,11 @@
 #define FILE_EXPORT_FILTER_IDX_MAX FILE_EXPORT_FILTER_IDX_RELOC_ASM
 #define FILE_EXPORT_EXTENSIONS_ARRAY { ".rmt",".asm",".sapr",".lzss",".sap",".xex",".asm" };
 #define FILE_EXPORT_EXTENSIONS_LENGTH_ARRAY { 4, 4, 5, 5, 4, 4, 4}
+
+// ----------------------------------------------------------------------------
+// Pokey play to buffer
+// 
+#define POKEY2BUFFER_STOP		0
+#define POKEY2BUFFER_RECORD		1
+#define POKEY2BUFFER_WRITE		2
+#define POKEY2BUFFER_START		3		// Start the Pokey 2 buffer recording process

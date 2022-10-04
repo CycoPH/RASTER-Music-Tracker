@@ -157,7 +157,7 @@ public:
 	BOOL SetBookmark();
 
 	BOOL Play(int mode, BOOL follow, int special = 0);
-	BOOL Stop();
+	BOOL Stop(void);
 	BOOL SongPlayNextLine();
 
 	BOOL PlayBeat();
@@ -205,13 +205,17 @@ public:
 	int ImportTMC(std::ifstream& in);
 	int ImportMOD(std::ifstream& in);
 
-	bool Export(std::ofstream& ou, int iotype, char* filename = NULL);
-
 	bool ExportV2(std::ofstream& ou, int iotype, LPCTSTR filename = NULL);
 	bool ExportAsRMT(std::ofstream& ou, tExportDescription* exportDesc);
 	bool ExportAsStrippedRMT(std::ofstream& ou, tExportDescription* exportDesc, LPCTSTR filename);
 	bool ExportAsAsm(std::ofstream& ou, tExportDescription* exportStrippedDesc);
 	bool ExportAsRelocatableAsmForRmtPlayer(std::ofstream& ou, tExportDescription* exportStrippedDesc);
+	bool ExportSAP_R(std::ofstream& ou);
+	bool ExportLZSS(std::ofstream& ou);
+	bool ExportLZSS_SAP(std::ofstream& ou);
+	bool ExportLZSS_XEX(std::ofstream& ou);
+
+	void DumpSongToPokeyBuffer();
 
 	bool TestBeforeFileSave();
 	int GetSubsongParts(CString& resultstr);
