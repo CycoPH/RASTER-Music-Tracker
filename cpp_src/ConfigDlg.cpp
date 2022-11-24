@@ -20,11 +20,10 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CConfigDlg)
 	m_midi_TouchResponse = FALSE;
-	//m_keyboard_playautofollow = FALSE;
 	m_midi_VolumeOffset = 0;
-	m_tracklinehighlight = 0;
+	m_trackLinePrimaryHighlight = 0;
+	m_trackLineSecondaryHighlight = 0;
 	m_scaling_percentage = 100;
-	//m_tuning = 0;
 	m_ntsc = FALSE;
 	m_doSmoothScrolling = TRUE;
 	m_displayflatnotes = FALSE;
@@ -33,10 +32,10 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	m_keyboard_updowncontinue = FALSE;
 	m_nohwsoundbuffer = FALSE;
 	m_tracklinealtnumbering = FALSE;
-	//m_keyboard_swapenter = FALSE;
 	m_keyboard_rememberoctavesandvolumes = FALSE;
 	m_keyboard_escresetatarisound = FALSE;
 	m_keyboard_askwhencontrol_s = FALSE;
+	m_viewDebugDisplay = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -44,19 +43,17 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CConfigDlg)
-	//DDX_Control(pDX, IDC_TRACKCURSORVERTICALRANGE, m_c_trackcursorverticalrange);
 	DDX_Control(pDX, IDC_KEYBOARD_LAYOUT, m_keyboard_c_layout);
 	DDX_Control(pDX, IDC_MIDI_DEVICE, m_midi_c_device);
 	DDX_Check(pDX, IDC_MIDI_TR, m_midi_TouchResponse);
-	//DDX_Check(pDX, IDC_KEYBOARD_PLAYAUTOFOLLOW, m_keyboard_playautofollow);
 	DDX_Text(pDX, IDC_MIDI_VOLUMEOFFSET, m_midi_VolumeOffset);
 	DDV_MinMaxInt(pDX, m_midi_VolumeOffset, 0, 15);
-	DDX_Text(pDX, IDC_TRACKLINEHIGHLIGHT, m_tracklinehighlight);
-	DDV_MinMaxInt(pDX, m_tracklinehighlight, 2, 256);
+	DDX_Text(pDX, IDC_TRACKLINEPRIMARYHIGHLIGHT, m_trackLinePrimaryHighlight);
+	DDV_MinMaxInt(pDX, m_trackLinePrimaryHighlight, 2, 256);
+	DDX_Text(pDX, IDC_TRACKLINESECONDARYHIGHLIGHT, m_trackLineSecondaryHighlight);
+	DDV_MinMaxInt(pDX, m_trackLineSecondaryHighlight, 2, 256);
 	DDX_Text(pDX, IDC_SCALINGPERCENTAGE, m_scaling_percentage);
 	DDV_MinMaxInt(pDX, m_scaling_percentage, 100, 300);
-	//DDX_Text(pDX, IDC_TUNING, m_tuning);
-	//DDV_MinMaxDouble(pDX, m_tuning, 230, 850);	//nearly a full octave accross, should be more than enough
 	DDX_Check(pDX, IDC_DISPLAYFLATNOTES, m_displayflatnotes);
 	DDX_Check(pDX, IDC_USEGERMANNOTATION, m_usegermannotation);
 	DDX_Check(pDX, IDC_NTSC, m_ntsc);
@@ -65,17 +62,16 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_KEYBOARD_UPDOWNCONTINUE, m_keyboard_updowncontinue);
 	DDX_Check(pDX, IDC_NOHWSOUNDBUFFER, m_nohwsoundbuffer);
 	DDX_Check(pDX, IDC_TRACKLINEALTNUMBERING, m_tracklinealtnumbering);
-	//DDX_Check(pDX, IDC_KEYBOARD_SWAPENTER, m_keyboard_swapenter);
 	DDX_Check(pDX, IDC_KEYBOARD_REMEMBEROCTAVESANDVOLUMES, m_keyboard_rememberoctavesandvolumes);
 	DDX_Check(pDX, IDC_KEYBOARD_ESCRESETATARISOUND, m_keyboard_escresetatarisound);
 	DDX_Check(pDX, IDC_KEYBOARD_ASKWHENCONTROL_S, m_keyboard_askwhencontrol_s);
+	DDX_Check(pDX, IDC_DEBUGDISPLAY, m_viewDebugDisplay);
 	//}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(CConfigDlg, CDialog)
 	//{{AFX_MSG_MAP(CConfigDlg)
 	ON_BN_CLICKED(IDC_MIDI_TR, OnMidiTouchResponseClicked)
-	ON_CBN_SELCHANGE(IDC_KEYBOARD_LAYOUT, OnSelchangeKeyboardLayout)
 	ON_BN_CLICKED(IDC_PATHS, OnPaths)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -129,16 +125,6 @@ void CConfigDlg::OnMidiTouchResponseClicked()
 	CButton *tr = (CButton*)GetDlgItem(IDC_MIDI_TR);
 	CEdit *vof = (CEdit*)GetDlgItem(IDC_MIDI_VOLUMEOFFSET);
 	vof->EnableWindow(tr->GetCheck());
-}
-
-void CConfigDlg::OnSelchangeKeyboardLayout() 
-{
-	if (m_keyboard_c_layout.GetCurSel()==1)
-	{
-		//Layer 2
-		CButton* af = (CButton*)GetDlgItem(IDC_KEYBOARD_PLAYAUTOFOLLOW);
-		af->SetCheck(1);
-	}
 }
 
 void CConfigDlg::OnPaths() 
